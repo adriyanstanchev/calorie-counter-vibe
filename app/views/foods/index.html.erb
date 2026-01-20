@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calorie Counter</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      padding: 40px;
+    }
+
+    h1 {
+      color: #333;
+      margin-bottom: 10px;
+      font-size: 2.5em;
+    }
+
+    .subtitle {
+      color: #666;
+      margin-bottom: 30px;
+      font-size: 1.1em;
+    }
+
+    .total-calories {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+      margin-bottom: 30px;
+      font-size: 1.5em;
+      font-weight: bold;
+    }
+
+    .form-section {
+      background: #f8f9fa;
+      padding: 25px;
+      border-radius: 10px;
+      margin-bottom: 30px;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      color: #333;
+      font-weight: 500;
+    }
+
+    input[type="text"],
+    input[type="number"] {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 1em;
+      transition: border-color 0.3s;
+    }
+
+    input[type="text"]:focus,
+    input[type="number"]:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    button {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 12px 30px;
+      border-radius: 8px;
+      font-size: 1em;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      font-weight: 500;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    }
+
+    .food-list {
+      margin-top: 30px;
+    }
+
+    .food-item {
+      background: white;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: border-color 0.3s;
+    }
+
+    .food-item:hover {
+      border-color: #667eea;
+    }
+
+    .food-info {
+      flex: 1;
+    }
+
+    .food-name {
+      font-weight: 600;
+      color: #333;
+      font-size: 1.1em;
+      margin-bottom: 5px;
+    }
+
+    .food-calories {
+      color: #666;
+      font-size: 0.9em;
+    }
+
+    .delete-btn {
+      background: #ff4757;
+      padding: 8px 20px;
+      font-size: 0.9em;
+    }
+
+    .delete-btn:hover {
+      background: #ff3838;
+      box-shadow: 0 5px 15px rgba(255, 71, 87, 0.4);
+    }
+
+    .message {
+      color: white;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .message.success {
+      background: #4caf50;
+    }
+
+    .message.delete {
+      background: #ff4757;
+    }
+
+    .message.error {
+      background: #ff6b6b;
+    }
+
+    .empty-state {
+      text-align: center;
+      color: #999;
+      padding: 40px;
+      font-size: 1.1em;
+    }
+
+    .food-search-container {
+      position: relative;
+      margin-bottom: 15px;
+    }
+
+    .food-suggestions {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: white;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      max-height: 200px;
+      overflow-y: auto;
+      z-index: 1000;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+      display: none;
+    }
+
+    .food-suggestion-item {
+      padding: 10px 15px;
+      cursor: pointer;
+      border-bottom: 1px solid #f0f0f0;
+      transition: background-color 0.2s;
+    }
+
+    .food-suggestion-item:hover {
+      background-color: #f8f9fa;
+    }
+
+    .food-suggestion-item:last-child {
+      border-bottom: none;
+    }
+
+    .food-suggestion-name {
+      font-weight: 600;
+      color: #333;
+    }
+
+    .food-suggestion-details {
+      font-size: 0.85em;
+      color: #666;
+      margin-top: 3px;
+    }
+
+    .helper-text {
+      font-size: 0.85em;
+      color: #666;
+      margin-top: 5px;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Calorie Counter</h1>
+    <p class="subtitle">Track your daily calorie intake</p>
+
+    <div class="total-calories">
+      Total Calories Today: <%= @total_calories.to_i %>
+    </div>
+
+    <% if @message %>
+      <div class="message <%= @message_type || 'success' %>">
+        <%= @message %>
+      </div>
+    <% end %>
+
+    <div class="form-section">
+      <h2 style="margin-bottom: 20px; color: #333;">Add Food Entry</h2>
+      <%= form_with url: foods_path, method: :post, local: true do |form| %>
+        <div class="form-group">
+          <%= form.label :name, "Food Name:" %>
+          <div class="food-search-container">
+            <%= form.text_field :name, id: "name", placeholder: "e.g., Apple (or search common foods)", required: true, autocomplete: "off" %>
+            <div id="food-suggestions" class="food-suggestions"></div>
+          </div>
+          <div class="helper-text">Start typing to search common foods, or enter your own</div>
+        </div>
+        <div class="form-group">
+          <%= form.label :calories, "Calories:" %>
+          <%= form.number_field :calories, id: "calories", placeholder: "e.g., 95", min: 1, required: true %>
+        </div>
+        <%= form.submit "Add Food" %>
+      <% end %>
+    </div>
+
+    <script>
+      const nameInput = document.getElementById('name');
+      const caloriesInput = document.getElementById('calories');
+      const suggestionsDiv = document.getElementById('food-suggestions');
+      let searchTimeout;
+
+      nameInput.addEventListener('input', function() {
+        const query = this.value.trim();
+        
+        clearTimeout(searchTimeout);
+        
+        if (query.length < 2) {
+          suggestionsDiv.style.display = 'none';
+          return;
+        }
+
+        searchTimeout = setTimeout(() => {
+          fetch(`/search_foods?q=${encodeURIComponent(query)}`, {
+            headers: {
+              'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+            }
+          })
+            .then(response => response.json())
+            .then(foods => {
+              if (foods.length === 0) {
+                suggestionsDiv.style.display = 'none';
+                return;
+              }
+
+              suggestionsDiv.innerHTML = foods.map(food => `
+                <div class="food-suggestion-item" data-name="${food['name']}" data-calories="${food['calories_per_serving']}">
+                  <div class="food-suggestion-name">${food['name']}</div>
+                  <div class="food-suggestion-details">${food['calories_per_serving']} calories (${food['serving_size'] || 'per serving'})</div>
+                </div>
+              `).join('');
+
+              suggestionsDiv.style.display = 'block';
+
+              // Add click handlers to suggestion items
+              suggestionsDiv.querySelectorAll('.food-suggestion-item').forEach(item => {
+                item.addEventListener('click', function() {
+                  nameInput.value = this.dataset.name;
+                  caloriesInput.value = this.dataset.calories;
+                  suggestionsDiv.style.display = 'none';
+                });
+              });
+            })
+            .catch(error => {
+              console.error('Error searching foods:', error);
+            });
+        }, 300);
+      });
+
+      // Hide suggestions when clicking outside
+      document.addEventListener('click', function(e) {
+        if (!nameInput.contains(e.target) && !suggestionsDiv.contains(e.target)) {
+          suggestionsDiv.style.display = 'none';
+        }
+      });
+    </script>
+
+    <div class="food-list">
+      <h2 style="margin-bottom: 20px; color: #333;">Today's Foods</h2>
+      <% if @foods.empty? %>
+        <div class="empty-state">No foods added yet. Add your first food above!</div>
+      <% else %>
+        <% @foods.each do |food| %>
+          <div class="food-item">
+            <div class="food-info">
+              <div class="food-name"><%= food.name %></div>
+              <div class="food-calories"><%= food.calories %> calories</div>
+            </div>
+            <%= button_to "Delete", food_path(food), method: :delete, class: "delete-btn", form: { style: "display: inline;" } %>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+</body>
+</html>

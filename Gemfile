@@ -1,19 +1,37 @@
 # Gemfile - This file lists all the Ruby gems (libraries) your app needs
-# Ruby uses 'gems' as package dependencies, similar to npm packages in Node.js
-
-# Source where to download gems from
 source 'https://rubygems.org'
+git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
-# Sinatra - A lightweight web framework for Ruby
-# It's simpler than Rails and perfect for small apps like this
-gem 'sinatra', '~> 3.0'
+ruby '3.2.0'
+
+# Rails - Web framework
+gem 'rails', '~> 7.1'
 
 # SQLite3 - Database driver for SQLite
-# SQLite is a file-based database, perfect for simple apps
-gem 'sqlite3', '~> 1.6'
+gem 'sqlite3', '~> 1.7'
 
-# Rack - Web server interface (Sinatra uses this under the hood)
-gem 'rack', '~> 2.2'
+# Puma - Web server
+gem 'puma', '~> 6.0'
 
-# WEBrick - Web server (required for Sinatra 3.x to run)
-gem 'webrick', '~> 1.8'
+# Use Sass to process CSS
+gem 'sass-rails', '>= 6'
+
+# Build JavaScript
+gem 'importmap-rails'
+
+# Hotwire's SPA-like page accelerator
+gem 'turbo-rails'
+
+# Hotwire's modest JavaScript framework
+gem 'stimulus-rails'
+
+# Use Active Model has_secure_password
+gem 'bcrypt', '~> 3.1.7'
+
+group :development, :test do
+  gem 'debug', platforms: %i[ mri mingw x64_mingw ]
+end
+
+group :development do
+  gem 'web-console', '>= 4.1.0'
+end
