@@ -1,18 +1,21 @@
-# Calorie Counter Web App
+# SumLife
 
-A simple calorie counter web application built with Ruby and Sinatra.
+A comprehensive nutrition tracking web application built with Ruby on Rails.
 
 ## Features
 
-- Add food entries with name and calories
-- View all foods added today
-- See total calories for the day
-- Delete food entries
+- User authentication (email/password)
+- Add food entries with comprehensive nutritional data (calories, protein, carbs, fat, fiber, sugar, sodium)
+- Browse previous days with date navigation
+- View nutritional totals and health score
+- Interactive charts for macro and nutrient breakdown
+- Food database with autocomplete search
+- Quantity-based nutritional calculations
 - Clean, modern UI
 
 ## Prerequisites
 
-- Ruby (version 2.7 or higher)
+- Ruby 3.2.0 or higher
 - Bundler gem (usually comes with Ruby)
 
 ## Setup Instructions
@@ -21,59 +24,40 @@ A simple calorie counter web application built with Ruby and Sinatra.
    ```bash
    bundle install
    ```
-   This reads the `Gemfile` and installs all required gems (Sinatra, SQLite3, etc.)
+   This reads the `Gemfile` and installs all required gems (Rails, SQLite3, etc.)
 
-2. **Run the application:**
+2. **Setup the database:**
    ```bash
-   bundle exec rackup
-   ```
-   Or alternatively:
-   ```bash
-   ruby app.rb
+   rails db:migrate
+   rails db:seed
    ```
 
-3. **Open your browser:**
+3. **Run the application:**
+   ```bash
+   rails server -p 4567
+   ```
+
+4. **Open your browser:**
    Navigate to `http://localhost:4567`
 
 ## Project Structure
 
-- `app.rb` - Main Sinatra application with all routes
-- `database.rb` - Database setup and helper methods
-- `config.ru` - Rack configuration file
-- `views/index.erb` - HTML template for the homepage
+- `app/` - Application code
+  - `controllers/` - Controllers handling requests
+  - `models/` - ActiveRecord models (Food, User, CommonFood)
+  - `views/` - ERB templates
+- `config/` - Configuration files
+  - `routes.rb` - Route definitions
+  - `database.yml` - Database configuration
+- `db/` - Database files
+  - `migrate/` - Database migrations
+  - `seeds.rb` - Seed data for common foods
 - `Gemfile` - Ruby dependencies
-- `calories.db` - SQLite database (created automatically)
 
-## How It Works
+## Technology Stack
 
-1. **Routes** (`app.rb`):
-   - `GET /` - Shows the homepage with all foods
-   - `POST /add` - Adds a new food entry
-   - `DELETE /delete/:id` - Deletes a food entry
-
-2. **Database** (`database.rb`):
-   - Creates a `foods` table with columns: id, name, calories, created_at
-   - Provides methods to add, delete, and query foods
-
-3. **Views** (`views/index.erb`):
-   - ERB (Embedded Ruby) template that generates HTML
-   - Displays foods and total calories
-
-## Learning Ruby Concepts
-
-This app demonstrates:
-- **Classes and methods** - `Database` class with class methods
-- **Instance variables** - `@foods`, `@total_calories` (available in views)
-- **Blocks** - `.each do |food|` for iterating
-- **Hashes** - `params`, `session`, database results
-- **String interpolation** - `"Hello #{name}"`
-- **Conditionals** - `if`, `unless`
-- **Sinatra routes** - `get`, `post`, `delete`
-
-## Switching to Rails Later
-
-If you want to switch to Rails later, the concepts are similar:
-- Routes work similarly (just defined in `config/routes.rb`)
-- Database operations use ActiveRecord (similar to our `Database` class)
-- Views use ERB templates (same syntax)
-- The main difference is Rails has more conventions and structure
+- **Rails 7.2.3** - Web framework
+- **Ruby 3.2.0** - Programming language
+- **SQLite3** - Database
+- **bcrypt** - Password hashing
+- **Chart.js** - Data visualization (via CDN)

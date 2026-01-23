@@ -10,13 +10,20 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2024_01_20_000002) do
+ActiveRecord::Schema[7.2].define(version: 2026_01_23_105310) do
   create_table "common_foods", force: :cascade do |t|
     t.string "name", null: false
     t.integer "calories_per_serving", null: false
     t.string "serving_size"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.decimal "protein"
+    t.decimal "fat"
+    t.decimal "carbs"
+    t.decimal "fiber"
+    t.decimal "sugar"
+    t.decimal "sodium"
+    t.decimal "base_quantity", precision: 8, scale: 2, default: "1.0"
     t.index ["name"], name: "index_common_foods_on_name", unique: true
   end
 
@@ -25,5 +32,23 @@ ActiveRecord::Schema[7.2].define(version: 2024_01_20_000002) do
     t.integer "calories", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "user_id", null: false
+    t.decimal "protein"
+    t.decimal "fat"
+    t.decimal "carbs"
+    t.decimal "fiber"
+    t.decimal "sugar"
+    t.decimal "sodium"
+    t.index ["user_id"], name: "index_foods_on_user_id"
   end
+
+  create_table "users", force: :cascade do |t|
+    t.string "email", null: false
+    t.string "password_digest", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["email"], name: "index_users_on_email", unique: true
+  end
+
+  add_foreign_key "foods", "users"
 end

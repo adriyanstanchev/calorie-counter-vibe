@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Calorie Counter</title>
+  <title>SumLife</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
     
@@ -37,6 +38,10 @@
       --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
     }
 
+    html {
+      scroll-behavior: smooth;
+    }
+
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
@@ -44,6 +49,10 @@
       min-height: 100vh;
       padding: 20px;
       color: var(--gray-900);
+    }
+
+    #form-section {
+      scroll-margin-top: 20px;
     }
 
     .container {
@@ -59,6 +68,65 @@
     .header {
       text-align: center;
       margin-bottom: 40px;
+      position: relative;
+      padding-top: 50px;
+      min-height: 120px;
+    }
+
+    .user-info {
+      position: absolute;
+      top: 0;
+      right: 0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      max-width: 50%;
+    }
+
+    .user-email {
+      color: var(--gray-600);
+      font-size: 0.875rem;
+      font-weight: 500;
+      max-width: 200px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .logout-btn,
+    .logout-btn input[type="submit"],
+    form[action*="logout"] input[type="submit"] {
+      background: var(--gray-200) !important;
+      color: var(--gray-700) !important;
+      border: none !important;
+      padding: 4px 10px !important;
+      border-radius: 6px !important;
+      font-size: 0.6875rem !important;
+      font-weight: 500 !important;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-decoration: none;
+      display: inline-block;
+      font-family: inherit;
+      white-space: nowrap;
+      line-height: 1.2;
+      min-height: auto;
+      height: auto;
+    }
+
+    .logout-btn:hover,
+    .logout-btn input[type="submit"]:hover,
+    form[action*="logout"] input[type="submit"]:hover {
+      background: var(--gray-300) !important;
+      transform: translateY(-1px);
+    }
+
+    form[action*="logout"] {
+      display: inline;
+      margin: 0;
+      padding: 0;
     }
 
     .header h1 {
@@ -70,12 +138,140 @@
       background-clip: text;
       margin-bottom: 8px;
       letter-spacing: -0.02em;
+      margin-top: 0;
     }
 
     .header .subtitle {
       color: var(--gray-600);
       font-size: 1.125rem;
       font-weight: 400;
+    }
+
+    .date-navigation {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 24px;
+      padding: 16px;
+      background: rgba(255, 255, 255, 0.6);
+      border-radius: 12px;
+      backdrop-filter: blur(10px);
+    }
+
+    .date-nav-btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+
+    .date-nav-btn:hover {
+      background: var(--primary-dark);
+      transform: translateY(-1px);
+    }
+
+    .date-input {
+      padding: 10px 16px;
+      border: 2px solid var(--gray-200);
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .date-today-btn {
+      background: var(--gray-200);
+      color: var(--gray-700);
+      padding: 10px 20px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.875rem;
+      transition: all 0.2s;
+    }
+
+    .date-today-btn:hover {
+      background: var(--gray-300);
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      text-align: center;
+      border: 1px solid var(--gray-200);
+    }
+
+    .stat-card.health-score {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: white;
+      grid-column: span 2;
+    }
+
+    .stat-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      opacity: 0.8;
+      margin-bottom: 8px;
+    }
+
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 800;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+
+    .health-score-value {
+      font-size: 3rem;
+    }
+
+    .stat-subtitle {
+      font-size: 0.875rem;
+      opacity: 0.9;
+    }
+
+    .charts-section {
+      background: white;
+      padding: 24px;
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      margin-bottom: 24px;
+      border: 1px solid var(--gray-200);
+    }
+
+    .charts-section h3 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-bottom: 20px;
+      color: var(--gray-900);
+    }
+
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 24px;
+    }
+
+    .chart-container {
+      position: relative;
+      height: 250px;
     }
 
     .total-calories-card {
@@ -143,12 +339,21 @@
       background: linear-gradient(135deg, var(--warning) 0%, #d97706 100%);
     }
 
+    .main-content {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-top: 32px;
+    }
+
     .form-section {
       background: var(--gray-50);
       padding: 32px;
       border-radius: 16px;
-      margin-bottom: 32px;
       border: 1px solid var(--gray-200);
+      height: fit-content;
+      position: sticky;
+      top: 20px;
     }
 
     .form-section h2 {
@@ -163,6 +368,38 @@
 
     .form-group {
       margin-bottom: 20px;
+    }
+
+    .quantity-group {
+      margin-bottom: 24px;
+    }
+
+    .quantity-input-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .quantity-input {
+      flex: 1;
+      max-width: 150px;
+    }
+
+    .quantity-unit {
+      color: var(--gray-600);
+      font-size: 0.875rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .nutritional-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+
+    .nutritional-grid .form-group {
+      margin-bottom: 16px;
     }
 
     label {
@@ -223,7 +460,8 @@
       box-shadow: var(--shadow-lg);
       font-family: inherit;
       width: 100%;
-      margin-top: 16px;
+      margin-top: 24px;
+      clear: both;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -275,7 +513,31 @@
     }
 
     .food-list {
-      margin-top: 32px;
+      background: var(--gray-50);
+      padding: 32px;
+      border-radius: 16px;
+      border: 1px solid var(--gray-200);
+      max-height: 600px;
+      overflow-y: auto;
+      min-height: 200px;
+    }
+
+    .food-list::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .food-list::-webkit-scrollbar-track {
+      background: var(--gray-100);
+      border-radius: 4px;
+    }
+
+    .food-list::-webkit-scrollbar-thumb {
+      background: var(--gray-400);
+      border-radius: 4px;
+    }
+
+    .food-list::-webkit-scrollbar-thumb:hover {
+      background: var(--gray-500);
     }
 
     .food-list h2 {
@@ -297,6 +559,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      gap: 16px;
       transition: all 0.2s ease;
       box-shadow: var(--shadow-sm);
     }
@@ -324,6 +587,18 @@
       font-weight: 500;
     }
 
+    .food-details {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .food-macros {
+      color: var(--gray-500);
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+
     .delete-btn {
       background: linear-gradient(135deg, var(--danger) 0%, #dc2626 100%);
       color: white;
@@ -336,6 +611,19 @@
       transition: all 0.2s ease;
       box-shadow: var(--shadow-sm);
       font-family: inherit;
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+
+    .delete-btn input[type="submit"] {
+      background: transparent;
+      border: none;
+      color: white;
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 0;
+      margin: 0;
     }
 
     .delete-btn:hover {
@@ -415,15 +703,46 @@
         border-radius: 16px;
       }
 
+      .header {
+        padding-top: 60px;
+        min-height: 140px;
+      }
+
       .header h1 {
         font-size: 2rem;
+      }
+
+      .user-info {
+        max-width: 100%;
+        justify-content: center;
+        left: 0;
+        right: 0;
+      }
+
+      .user-email {
+        max-width: 150px;
+        font-size: 0.75rem;
+      }
+
+      .logout-btn {
+        padding: 4px 10px;
+        font-size: 0.6875rem;
       }
 
       .total-calories-value {
         font-size: 2rem;
       }
 
+      .main-content {
+        grid-template-columns: 1fr;
+      }
+
       .form-section {
+        padding: 20px;
+        position: static;
+      }
+
+      .food-list {
         padding: 20px;
       }
     }
@@ -432,13 +751,62 @@
 <body>
   <div class="container">
     <div class="header">
-      <h1>🍎 Calorie Counter</h1>
+      <div class="user-info">
+        <span class="user-email"><%= current_user.email %></span>
+        <%= button_to "Logout", logout_path, method: :delete, class: "logout-btn", form: { style: "display: inline;" } %>
+      </div>
+      <h1>🍎 SumLife</h1>
       <p class="subtitle">Track your daily nutrition with ease</p>
     </div>
 
-    <div class="total-calories-card">
-      <div class="total-calories-label">Total Calories Today</div>
-      <div class="total-calories-value"><%= @total_calories.to_i %></div>
+    <!-- Date Navigation -->
+    <div class="date-navigation">
+      <% if @selected_date > @earliest_date %>
+        <%= link_to "←", root_path(date: (@selected_date - 1.day)), class: "date-nav-btn", title: "Previous day" %>
+      <% else %>
+        <span class="date-nav-btn" style="opacity: 0.3; cursor: not-allowed;">←</span>
+      <% end %>
+      <input type="date" id="date-picker" value="<%= @selected_date %>" class="date-input" 
+             min="<%= @earliest_date %>" max="<%= [@latest_date, Date.current].max %>">
+      <% if @selected_date < [@latest_date, Date.current].max %>
+        <%= link_to "→", root_path(date: (@selected_date + 1.day)), class: "date-nav-btn", title: "Next day" %>
+      <% else %>
+        <span class="date-nav-btn" style="opacity: 0.3; cursor: not-allowed;">→</span>
+      <% end %>
+      <% if @selected_date != Date.current %>
+        <%= link_to "Today", root_path, class: "date-today-btn" %>
+      <% end %>
+    </div>
+
+    <!-- Health Score and Totals -->
+    <div class="stats-grid">
+      <div class="stat-card health-score">
+        <div class="stat-label">Health Score</div>
+        <div class="stat-value health-score-value" data-score="<%= @health_score %>">
+          <%= @health_score %>
+        </div>
+        <div class="stat-subtitle">out of 100</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Total Calories</div>
+        <div class="stat-value"><%= @nutritional_totals[:calories].to_i %></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Protein</div>
+        <div class="stat-value"><%= @nutritional_totals[:protein].round(1) %>g</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Carbs</div>
+        <div class="stat-value"><%= @nutritional_totals[:carbs].round(1) %>g</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Fat</div>
+        <div class="stat-value"><%= @nutritional_totals[:fat].round(1) %>g</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Fiber</div>
+        <div class="stat-value"><%= @nutritional_totals[:fiber].round(1) %>g</div>
+      </div>
     </div>
 
     <% if @message %>
@@ -447,9 +815,11 @@
       </div>
     <% end %>
 
-    <div class="form-section">
+    <div class="main-content">
+      <div class="form-section" id="form-section">
       <h2>➕ Add Food Entry</h2>
       <%= form_with url: foods_path, method: :post, local: true do |form| %>
+        <%= form.hidden_field :date, value: @selected_date %>
         <div class="form-group">
           <%= form.label :name, "Food Name" %>
           <div class="food-search-container">
@@ -458,92 +828,436 @@
           </div>
           <div class="helper-text">💡 Start typing to search from our food database</div>
         </div>
+        <div class="form-group quantity-group">
+          <%= form.label :quantity, "Quantity/Amount" %>
+          <div class="quantity-input-wrapper">
+            <%= form.number_field :quantity, id: "quantity", placeholder: "1", min: 0.1, step: 0.1, value: 1, class: "quantity-input" %>
+            <span id="quantity-unit" class="quantity-unit">serving(s)</span>
+          </div>
+          <div class="helper-text" id="base-serving-info">Base: 1 serving</div>
+        </div>
+        <div class="nutritional-grid">
+          <div class="form-group">
+            <%= form.label :calories, "Calories" %>
+            <%= form.number_field :calories, id: "calories", placeholder: "0", min: 0, step: 0.1, required: true %>
+          </div>
+          <div class="form-group">
+            <%= form.label :protein, "Protein (g)" %>
+            <%= form.number_field :protein, id: "protein", placeholder: "0", min: 0, step: 0.1, value: 0 %>
+          </div>
+          <div class="form-group">
+            <%= form.label :carbs, "Carbs (g)" %>
+            <%= form.number_field :carbs, id: "carbs", placeholder: "0", min: 0, step: 0.1, value: 0 %>
+          </div>
+          <div class="form-group">
+            <%= form.label :fat, "Fat (g)" %>
+            <%= form.number_field :fat, id: "fat", placeholder: "0", min: 0, step: 0.1, value: 0 %>
+          </div>
+          <div class="form-group">
+            <%= form.label :fiber, "Fiber (g)" %>
+            <%= form.number_field :fiber, id: "fiber", placeholder: "0", min: 0, step: 0.1, value: 0 %>
+          </div>
+          <div class="form-group">
+            <%= form.label :sugar, "Sugar (g)" %>
+            <%= form.number_field :sugar, id: "sugar", placeholder: "0", min: 0, step: 0.1, value: 0 %>
+        </div>
         <div class="form-group">
-          <%= form.label :calories, "Calories" %>
-          <%= form.number_field :calories, id: "calories", placeholder: "Enter calories", min: 1, required: true %>
+            <%= form.label :sodium, "Sodium (mg)" %>
+            <%= form.number_field :sodium, id: "sodium", placeholder: "0", min: 0, step: 0.1, value: 0 %>
+          </div>
         </div>
         <%= form.submit "➕ Add", class: "add-button" %>
       <% end %>
+      </div>
+
+      <div class="food-list">
+        <h2>📋 Foods for <%= @selected_date.strftime("%B %d, %Y") %></h2>
+        <% if @foods.empty? %>
+          <div class="empty-state">
+            <div class="empty-state-icon">🍽️</div>
+            <div class="empty-state-text">No foods added yet.<br>Add your first food above!</div>
+          </div>
+        <% else %>
+          <% @foods.each do |food| %>
+            <div class="food-item">
+              <div class="food-info">
+                <div class="food-name"><%= food.name %></div>
+                <div class="food-details">
+                  <span class="food-calories"><%= food.calories.round %> cal</span>
+                  <% if food.protein > 0 || food.carbs > 0 || food.fat > 0 %>
+                    <span class="food-macros">
+                      P: <%= food.protein.round(1) %>g • C: <%= food.carbs.round(1) %>g • F: <%= food.fat.round(1) %>g
+                    </span>
+                  <% end %>
+                </div>
+              </div>
+              <%= button_to "Delete", food_path(food), method: :delete, class: "delete-btn", form: { style: "display: inline;" } %>
+            </div>
+          <% end %>
+        <% end %>
+      </div>
     </div>
 
-    <div class="food-list">
-      <h2>📋 Today's Foods</h2>
-      <% if @foods.empty? %>
-        <div class="empty-state">
-          <div class="empty-state-icon">🍽️</div>
-          <div class="empty-state-text">No foods added yet.<br>Add your first food above!</div>
-        </div>
-      <% else %>
-        <% @foods.each do |food| %>
-          <div class="food-item">
-            <div class="food-info">
-              <div class="food-name"><%= food.name %></div>
-              <div class="food-calories"><%= food.calories %> calories</div>
-            </div>
-            <%= button_to "Delete", food_path(food), method: :delete, class: "delete-btn", form: { style: "display: inline;" } %>
+    <!-- Charts Section -->
+    <% if @nutritional_totals[:calories] > 0 %>
+      <div class="charts-section">
+        <h3>📊 Nutritional Breakdown</h3>
+        <div class="charts-grid">
+          <div class="chart-container">
+            <canvas id="macroChart"></canvas>
           </div>
-        <% end %>
-      <% end %>
-    </div>
+          <div class="chart-container">
+            <canvas id="nutritionChart"></canvas>
+          </div>
+        </div>
+      </div>
+    <% end %>
   </div>
 
-  <script>
-    const nameInput = document.getElementById('name');
-    const caloriesInput = document.getElementById('calories');
-    const suggestionsDiv = document.getElementById('food-suggestions');
-    let searchTimeout;
+    <script>
+    // Prevent page jump on form submit by preserving scroll position
+    (function() {
+      // Restore scroll position after page load (with small delay to ensure DOM is ready)
+      window.addEventListener('load', function() {
+        const scrollPos = sessionStorage.getItem('scrollPosition');
+        if (scrollPos) {
+          // Use requestAnimationFrame to ensure smooth scroll
+          requestAnimationFrame(function() {
+            window.scrollTo({
+              top: parseInt(scrollPos),
+              behavior: 'instant'
+            });
+            sessionStorage.removeItem('scrollPosition');
+          });
+        }
+      });
 
-    nameInput.addEventListener('input', function() {
-      const query = this.value.trim();
-      
-      clearTimeout(searchTimeout);
-      
-      if (query.length < 2) {
-        suggestionsDiv.style.display = 'none';
+      // Store scroll position before form submit
+      const form = document.querySelector('form[action="/foods"]');
+      if (form) {
+        form.addEventListener('submit', function(e) {
+          // Store current scroll position
+          sessionStorage.setItem('scrollPosition', window.scrollY.toString());
+        });
+      }
+
+      // Also store scroll position for delete buttons
+      document.querySelectorAll('form[action*="/foods/"]').forEach(function(deleteForm) {
+        deleteForm.addEventListener('submit', function() {
+          sessionStorage.setItem('scrollPosition', window.scrollY.toString());
+        });
+      });
+    })();
+
+    // Quantity and nutritional calculation
+      const nameInput = document.getElementById('name');
+      const caloriesInput = document.getElementById('calories');
+      const suggestionsDiv = document.getElementById('food-suggestions');
+      let searchTimeout;
+    let baseValues = {};
+
+    // Function to calculate nutritional values based on quantity
+    function calculateNutritionalValues() {
+      if (!baseValues || Object.keys(baseValues).length === 0 || !baseValues.baseQuantity) {
+        console.log('Base values not set:', baseValues);
         return;
       }
+      
+      const quantityInput = document.getElementById('quantity');
+      if (!quantityInput) return;
+      
+      const quantity = parseFloat(quantityInput.value) || baseValues.baseQuantity;
+      
+      // Calculate multiplier: user_quantity / base_quantity
+      const multiplier = quantity / baseValues.baseQuantity;
+      
+      // Update all nutritional fields
+      const caloriesEl = document.getElementById('calories');
+      const proteinEl = document.getElementById('protein');
+      const fatEl = document.getElementById('fat');
+      const carbsEl = document.getElementById('carbs');
+      const fiberEl = document.getElementById('fiber');
+      const sugarEl = document.getElementById('sugar');
+      const sodiumEl = document.getElementById('sodium');
+      
+      if (caloriesEl) caloriesEl.value = (baseValues.calories * multiplier).toFixed(1);
+      if (proteinEl) proteinEl.value = (baseValues.protein * multiplier).toFixed(1);
+      if (fatEl) fatEl.value = (baseValues.fat * multiplier).toFixed(1);
+      if (carbsEl) carbsEl.value = (baseValues.carbs * multiplier).toFixed(1);
+      if (fiberEl) fiberEl.value = (baseValues.fiber * multiplier).toFixed(1);
+      if (sugarEl) sugarEl.value = (baseValues.sugar * multiplier).toFixed(1);
+      if (sodiumEl) sodiumEl.value = (baseValues.sodium * multiplier).toFixed(1);
+    }
 
-      searchTimeout = setTimeout(() => {
+    // Listen for quantity changes
+    const quantityInput = document.getElementById('quantity');
+    if (quantityInput) {
+      quantityInput.addEventListener('input', calculateNutritionalValues);
+      quantityInput.addEventListener('change', calculateNutritionalValues);
+    }
+
+      nameInput.addEventListener('input', function() {
+        const query = this.value.trim();
+        
+        clearTimeout(searchTimeout);
+        
+        if (query.length < 2) {
+          suggestionsDiv.style.display = 'none';
+          return;
+        }
+
+        searchTimeout = setTimeout(() => {
         fetch(`/search_foods?q=${encodeURIComponent(query)}`, {
+          method: 'GET',
           headers: {
-            'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
-          }
+            'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content,
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+          },
+          credentials: 'same-origin'
         })
-          .then(response => response.json())
-          .then(foods => {
-            if (foods.length === 0) {
-              suggestionsDiv.style.display = 'none';
-              return;
+          .then(response => {
+            if (!response.ok) {
+              throw new Error('Network response was not ok');
             }
-
-            suggestionsDiv.innerHTML = foods.map(food => `
-              <div class="food-suggestion-item" data-name="${food['name']}" data-calories="${food['calories_per_serving']}">
-                <div class="food-suggestion-name">${food['name']}</div>
-                <div class="food-suggestion-details">${food['calories_per_serving']} calories • ${food['serving_size'] || 'per serving'}</div>
-              </div>
-            `).join('');
-
-            suggestionsDiv.style.display = 'block';
-
-            suggestionsDiv.querySelectorAll('.food-suggestion-item').forEach(item => {
-              item.addEventListener('click', function() {
-                nameInput.value = this.dataset.name;
-                caloriesInput.value = this.dataset.calories;
-                suggestionsDiv.style.display = 'none';
-              });
-            });
+            return response.json();
           })
-          .catch(error => {
-            console.error('Error searching foods:', error);
-          });
-      }, 300);
-    });
+            .then(foods => {
+              if (foods.length === 0) {
+                suggestionsDiv.style.display = 'none';
+                return;
+              }
 
-    document.addEventListener('click', function(e) {
-      if (!nameInput.contains(e.target) && !suggestionsDiv.contains(e.target)) {
-        suggestionsDiv.style.display = 'none';
+              suggestionsDiv.innerHTML = foods.map(food => `
+              <div class="food-suggestion-item" 
+                   data-name="${food['name']}" 
+                   data-calories="${food['calories_per_serving'] || 0}"
+                   data-protein="${food['protein'] || 0}"
+                   data-fat="${food['fat'] || 0}"
+                   data-carbs="${food['carbs'] || 0}"
+                   data-fiber="${food['fiber'] || 0}"
+                   data-sugar="${food['sugar'] || 0}"
+                   data-sodium="${food['sodium'] || 0}"
+                   data-base-quantity="${food['base_quantity'] ? food['base_quantity'] : 1}"
+                   data-serving-size="${food['serving_size'] || 'serving'}">
+                  <div class="food-suggestion-name">${food['name']}</div>
+                <div class="food-suggestion-details">${food['calories_per_serving']} calories • ${food['serving_size'] || 'per serving'}</div>
+                </div>
+              `).join('');
+
+              suggestionsDiv.style.display = 'block';
+
+              suggestionsDiv.querySelectorAll('.food-suggestion-item').forEach(item => {
+                item.addEventListener('click', function() {
+                  nameInput.value = this.dataset.name;
+                  
+                  // Store base values - access data attributes correctly
+                  // Dataset API converts kebab-case to camelCase: data-base-quantity -> dataset.baseQuantity
+                  const baseQty = parseFloat(this.dataset.baseQuantity) || 1;
+                  
+                  baseValues = {
+                    calories: parseFloat(this.dataset.calories) || 0,
+                    protein: parseFloat(this.dataset.protein) || 0,
+                    fat: parseFloat(this.dataset.fat) || 0,
+                    carbs: parseFloat(this.dataset.carbs) || 0,
+                    fiber: parseFloat(this.dataset.fiber) || 0,
+                    sugar: parseFloat(this.dataset.sugar) || 0,
+                    sodium: parseFloat(this.dataset.sodium) || 0,
+                    baseQuantity: baseQty,
+                    servingSize: this.dataset.servingSize || 'serving'
+                  };
+                  
+                  console.log('Base values set:', baseValues);
+                  
+                  // Set quantity to base quantity
+                  const quantityInput = document.getElementById('quantity');
+                  if (quantityInput) {
+                    quantityInput.value = baseValues.baseQuantity;
+                  }
+                  
+                  // Update unit display
+                  const unitSpan = document.getElementById('quantity-unit');
+                  const servingInfo = document.getElementById('base-serving-info');
+                  
+                  if (unitSpan && servingInfo) {
+                    if (baseValues.baseQuantity === 100) {
+                      unitSpan.textContent = 'g';
+                      servingInfo.textContent = `Base: ${baseValues.servingSize}`;
+                    } else if (baseValues.servingSize && baseValues.servingSize.includes('oz')) {
+                      unitSpan.textContent = 'oz';
+                      servingInfo.textContent = `Base: ${baseValues.servingSize}`;
+                    } else if (baseValues.servingSize && baseValues.servingSize.includes('cup')) {
+                      unitSpan.textContent = 'cup(s)';
+                      servingInfo.textContent = `Base: ${baseValues.servingSize}`;
+                    } else if (baseValues.servingSize && baseValues.servingSize.includes('tbsp')) {
+                      unitSpan.textContent = 'tbsp';
+                      servingInfo.textContent = `Base: ${baseValues.servingSize}`;
+                    } else {
+                      unitSpan.textContent = 'serving(s)';
+                      servingInfo.textContent = `Base: ${baseValues.servingSize}`;
+                    }
+                  }
+                  
+                  // Calculate and set values based on quantity
+                  // Use setTimeout to ensure DOM is ready
+                  setTimeout(() => {
+                    calculateNutritionalValues();
+                  }, 10);
+                  
+                  suggestionsDiv.style.display = 'none';
+                });
+              });
+            })
+            .catch(error => {
+              console.error('Error searching foods:', error);
+            suggestionsDiv.style.display = 'none';
+            });
+        }, 300);
+      });
+
+      document.addEventListener('click', function(e) {
+        if (!nameInput.contains(e.target) && !suggestionsDiv.contains(e.target)) {
+          suggestionsDiv.style.display = 'none';
+        }
+      });
+
+    // Date picker handler
+    const datePicker = document.getElementById('date-picker');
+    if (datePicker) {
+      datePicker.addEventListener('change', function() {
+        const selectedDate = this.value;
+        window.location.href = `/?date=${selectedDate}`;
+      });
+    }
+
+    // Initialize charts if they exist
+    <% if @nutritional_totals[:calories] > 0 %>
+    const macroCtx = document.getElementById('macroChart');
+    const nutritionCtx = document.getElementById('nutritionChart');
+    
+    if (macroCtx) {
+      new Chart(macroCtx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Protein', 'Carbs', 'Fat'],
+          datasets: [{
+            data: [
+              <%= (@nutritional_totals[:protein] * 4).round(1) %>,
+              <%= (@nutritional_totals[:carbs] * 4).round(1) %>,
+              <%= (@nutritional_totals[:fat] * 9).round(1) %>
+            ],
+            backgroundColor: [
+              'rgba(99, 102, 241, 0.8)',
+              'rgba(16, 185, 129, 0.8)',
+              'rgba(245, 158, 11, 0.8)'
+            ],
+            borderWidth: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                padding: 15,
+                font: {
+                  size: 12,
+                  weight: '600'
+                }
+              }
+            },
+            title: {
+              display: true,
+              text: 'Macros (by calories)',
+              font: {
+                size: 14,
+                weight: '700'
+              },
+              padding: {
+                bottom: 10
+              }
+            }
+          }
+        }
+      });
+    }
+
+    if (nutritionCtx) {
+      new Chart(nutritionCtx, {
+        type: 'bar',
+        data: {
+          labels: ['Fiber (g)', 'Sugar (g)', 'Sodium (mg/100)'],
+          datasets: [{
+            label: 'Amount',
+            data: [
+              <%= @nutritional_totals[:fiber].round(1) %>,
+              <%= @nutritional_totals[:sugar].round(1) %>,
+              <%= (@nutritional_totals[:sodium] / 100).round(1) %>
+            ],
+            backgroundColor: [
+              'rgba(16, 185, 129, 0.8)',
+              'rgba(239, 68, 68, 0.8)',
+              'rgba(99, 102, 241, 0.8)'
+            ],
+            borderRadius: 8
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: false
+            },
+            title: {
+              display: true,
+              text: 'Other Nutrients',
+              font: {
+                size: 14,
+                weight: '700'
+              },
+              padding: {
+                bottom: 10
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                font: {
+                  size: 11
+                }
+              }
+            },
+            x: {
+              ticks: {
+                font: {
+                  size: 11,
+                  weight: '600'
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+        <% end %>
+
+    // Health score color coding
+    const healthScoreEl = document.querySelector('.health-score-value');
+    if (healthScoreEl) {
+      const score = parseInt(healthScoreEl.dataset.score);
+      if (score >= 80) {
+        healthScoreEl.style.color = '#10b981';
+      } else if (score >= 60) {
+        healthScoreEl.style.color = '#f59e0b';
+      } else {
+        healthScoreEl.style.color = '#ef4444';
       }
-    });
+    }
   </script>
 </body>
 </html>
