@@ -86,13 +86,31 @@
     }
 
     .user-email {
-      color: var(--gray-600);
+      color: var(--gray-700);
       font-size: 0.875rem;
       font-weight: 500;
+      text-decoration: none;
+      background: var(--gray-200);
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: 1px solid var(--gray-300);
+      transition: all 0.2s ease;
+      display: inline-block;
+      cursor: pointer;
       max-width: 200px;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
+    }
+
+    .user-email:hover {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+      text-decoration: none;
+      transform: translateY(-1px);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
     }
 
     .logout-btn,
@@ -854,6 +872,35 @@
       margin-top: 4px;
     }
 
+    .food-suggestions.loading {
+      display: block;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .search-loader {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid var(--gray-200);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .search-loading-text {
+      color: var(--gray-600);
+      font-size: 0.875rem;
+      display: inline-flex;
+      align-items: center;
+    }
+
     .food-suggestion-item {
       padding: 14px 16px;
       cursor: pointer;
@@ -952,8 +999,7 @@
   <div class="container">
     <div class="header">
       <div class="user-info">
-        <span class="user-email"><%= current_user.email %></span>
-        <%= link_to "Profile", profile_path, class: "profile-link" %>
+        <%= link_to current_user.email, profile_path, class: "user-email profile-link" %>
         <%= button_to "Logout", logout_path, method: :delete, class: "logout-btn", form: { style: "display: inline;" } %>
       </div>
       <h1>🍎 SumLife</h1>
@@ -1310,6 +1356,11 @@
         }
 
         searchTimeout = setTimeout(() => {
+          // Show loading indicator
+          suggestionsDiv.innerHTML = '<div class="search-loading-text"><div class="search-loader"></div>Searching...</div>';
+          suggestionsDiv.className = 'food-suggestions loading';
+          suggestionsDiv.style.display = 'block';
+          
         fetch(`/search_foods?q=${encodeURIComponent(query)}`, {
           method: 'GET',
           headers: {
@@ -1327,9 +1378,19 @@
           })
             .then(foods => {
               if (foods.length === 0) {
+                // If no results in database, try to fetch from external API
+                if (query.length >= 3) {
+                  suggestionsDiv.innerHTML = '<div class="search-loading-text"><div class="search-loader"></div>Fetching nutritional data...</div>';
+                  fetchFoodDataFromAPI(query);
+                  return;
+                }
                 suggestionsDiv.style.display = 'none';
+                suggestionsDiv.className = 'food-suggestions';
                 return;
               }
+              
+              // Remove loading class
+              suggestionsDiv.className = 'food-suggestions';
 
               suggestionsDiv.innerHTML = foods.map(food => `
               <div class="food-suggestion-item" 
@@ -1413,7 +1474,8 @@
             })
             .catch(error => {
               console.error('Error searching foods:', error);
-            suggestionsDiv.style.display = 'none';
+              suggestionsDiv.style.display = 'none';
+              suggestionsDiv.className = 'food-suggestions';
             });
         }, 300);
       });
@@ -1423,6 +1485,115 @@
           suggestionsDiv.style.display = 'none';
         }
       });
+
+    // Function to fetch food data from external API when not found in database
+    function fetchFoodDataFromAPI(foodName) {
+      if (foodName.length < 3) {
+        suggestionsDiv.style.display = 'none';
+        suggestionsDiv.className = 'food-suggestions';
+        return;
+      }
+      
+      fetch(`/fetch_food_data?name=${encodeURIComponent(foodName)}`, {
+        method: 'GET',
+        headers: {
+          'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content,
+          'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        credentials: 'same-origin'
+      })
+        .then(response => {
+          if (!response.ok) {
+            return response.json().then(data => {
+              throw new Error(data.error || 'Failed to fetch food data');
+            });
+          }
+          return response.json();
+        })
+        .then(foodData => {
+          // Hide loading indicator
+          suggestionsDiv.style.display = 'none';
+          suggestionsDiv.className = 'food-suggestions';
+          
+          // Auto-populate form fields with fetched data
+          if (foodData.name && nameInput.value.trim().toLowerCase() === foodName.toLowerCase()) {
+            // Set base values for 100g (standard)
+            baseValues = {
+              calories: foodData.calories || 0,
+              protein: foodData.protein || 0,
+              fat: foodData.fat || 0,
+              carbs: foodData.carbs || 0,
+              fiber: foodData.fiber || 0,
+              sugar: foodData.sugar || 0,
+              sodium: foodData.sodium || 0,
+              baseQuantity: foodData.base_quantity || 100,
+              servingSize: foodData.serving_size || '100g'
+            };
+            
+            // Set quantity to 100g
+            const quantityInput = document.getElementById('quantity');
+            if (quantityInput) {
+              quantityInput.value = 100;
+            }
+            
+            // Update unit display
+            const unitSpan = document.getElementById('quantity-unit');
+            const servingInfo = document.getElementById('base-serving-info');
+            
+            if (unitSpan && servingInfo) {
+              unitSpan.textContent = 'g';
+              servingInfo.textContent = 'Base: 100g';
+            }
+            
+            // Calculate and populate nutritional values
+            setTimeout(() => {
+              calculateNutritionalValues();
+            }, 10);
+          }
+        })
+        .catch(error => {
+          // Hide loading indicator on error
+          suggestionsDiv.style.display = 'none';
+          suggestionsDiv.className = 'food-suggestions';
+          // Silently fail - user can still manually enter the food
+          console.log('Could not fetch food data:', error.message);
+        });
+    }
+
+    // Auto-fetch when user leaves the input field and food is not in database
+    let fetchTimeout;
+    nameInput.addEventListener('blur', function() {
+      const query = this.value.trim();
+      if (query.length >= 3) {
+        clearTimeout(fetchTimeout);
+        fetchTimeout = setTimeout(() => {
+          // Check if it's in our database first
+          fetch(`/search_foods?q=${encodeURIComponent(query)}`, {
+            method: 'GET',
+            headers: {
+              'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content,
+              'Accept': 'application/json',
+              'X-Requested-With': 'XMLHttpRequest'
+            },
+            credentials: 'same-origin'
+          })
+            .then(response => response.json())
+            .then(foods => {
+              // Only fetch from API if not found in database and no base values set
+              if (foods.length === 0 && (!baseValues || Object.keys(baseValues).length === 0)) {
+                fetchFoodDataFromAPI(query);
+              }
+            })
+            .catch(() => {
+              // If search fails, try API anyway
+              if (!baseValues || Object.keys(baseValues).length === 0) {
+                fetchFoodDataFromAPI(query);
+              }
+            });
+        }, 500);
+      }
+    });
 
     // Edit Modal Functions
     function openEditModal(foodId, name, calories, protein, fat, carbs, fiber, sugar, sodium) {

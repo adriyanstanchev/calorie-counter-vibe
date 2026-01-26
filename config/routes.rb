@@ -14,10 +14,13 @@ Rails.application.routes.draw do
   # Root route - show the main page (requires login)
   root 'foods#index'
   
+  # Search endpoint for common foods (must be before resources)
+  get '/search_foods', to: 'foods#search', defaults: { format: :json }
+  
+  # Fetch nutritional data from external API (must be before resources)
+  get '/fetch_food_data', to: 'foods#fetch_food_data', defaults: { format: :json }
+  
   # Food routes (require login)
   resources :foods, only: [:create, :update, :destroy]
   get '/foods/:id/edit', to: 'foods#edit', as: 'edit_food'
-  
-  # Search endpoint for common foods
-  get '/search_foods', to: 'foods#search'
 end
