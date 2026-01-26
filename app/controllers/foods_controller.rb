@@ -6,6 +6,7 @@ class FoodsController < ApplicationController
     @foods = Food.for_date(current_user, @selected_date)
     @nutritional_totals = Food.nutritional_totals_for_date(current_user, @selected_date)
     @health_score = Food.health_score_for_date(current_user, @selected_date)
+    @food = nil # Ensure @food is nil for new entries
     
     # Get date range for navigation
     @earliest_date = current_user.foods.minimum(:created_at)&.to_date || Date.current
@@ -39,6 +40,55 @@ class FoodsController < ApplicationController
         created_at: selected_date.beginning_of_day + Time.current.hour.hours + Time.current.min.minutes
       )
       session[:message] = "Added #{name} (#{calories.round} calories)!"
+      session[:message_type] = "success"
+    else
+      session[:message] = "Please enter both name and calories!"
+      session[:message_type] = "error"
+    end
+    
+    redirect_to root_path(date: selected_date, anchor: 'form-section')
+  end
+  
+  # GET /foods/:id/edit - Show edit form (populated with food data)
+  def edit
+    @food = current_user.foods.find(params[:id])
+    @selected_date = @food.created_at.to_date
+    @foods = Food.for_date(current_user, @selected_date)
+    @nutritional_totals = Food.nutritional_totals_for_date(current_user, @selected_date)
+    @health_score = Food.health_score_for_date(current_user, @selected_date)
+    
+    @earliest_date = current_user.foods.minimum(:created_at)&.to_date || Date.current
+    @latest_date = current_user.foods.maximum(:created_at)&.to_date || Date.current
+    
+    render :index
+  end
+  
+  # PATCH/PUT /foods/:id - Update a food entry
+  def update
+    food = current_user.foods.find(params[:id])
+    selected_date = food.created_at.to_date
+    
+    name = params[:name]
+    calories = params[:calories].to_f
+    protein = params[:protein].to_f
+    fat = params[:fat].to_f
+    carbs = params[:carbs].to_f
+    fiber = params[:fiber].to_f
+    sugar = params[:sugar].to_f
+    sodium = params[:sodium].to_f
+    
+    if name.present? && calories > 0
+      food.update(
+        name: name,
+        calories: calories,
+        protein: protein,
+        fat: fat,
+        carbs: carbs,
+        fiber: fiber,
+        sugar: sugar,
+        sodium: sodium
+      )
+      session[:message] = "Updated #{name} (#{calories.round} calories)!"
       session[:message_type] = "success"
     else
       session[:message] = "Please enter both name and calories!"

@@ -11,7 +11,8 @@ Rails.application.routes.draw do
   root 'foods#index'
   
   # Food routes (require login)
-  resources :foods, only: [:create, :destroy]
+  resources :foods, only: [:create, :update, :destroy]
+  get '/foods/:id/edit', to: 'foods#edit', as: 'edit_food'
   
   # Search endpoint for common foods
   get '/search_foods', to: 'foods#search'

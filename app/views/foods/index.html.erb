@@ -47,7 +47,7 @@
       background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
       background-attachment: fixed;
       min-height: 100vh;
-      padding: 20px;
+      padding: 8px;
       color: var(--gray-900);
     }
 
@@ -56,21 +56,21 @@
     }
 
     .container {
-      max-width: 900px;
+      max-width: 1400px;
       margin: 0 auto;
       background: rgba(255, 255, 255, 0.95);
       backdrop-filter: blur(10px);
-      border-radius: 24px;
+      border-radius: 16px;
       box-shadow: var(--shadow-xl);
-      padding: 48px;
+      padding: 24px;
     }
 
     .header {
       text-align: center;
-      margin-bottom: 40px;
+      margin-bottom: 24px;
       position: relative;
-      padding-top: 50px;
-      min-height: 120px;
+      padding-top: 40px;
+      min-height: 100px;
     }
 
     .user-info {
@@ -203,14 +203,14 @@
     .stats-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-      gap: 16px;
-      margin-bottom: 24px;
+      gap: 12px;
+      margin-bottom: 16px;
     }
 
     .stat-card {
       background: white;
-      padding: 20px;
-      border-radius: 12px;
+      padding: 16px;
+      border-radius: 10px;
       box-shadow: var(--shadow);
       text-align: center;
       border: 1px solid var(--gray-200);
@@ -249,29 +249,33 @@
 
     .charts-section {
       background: white;
-      padding: 24px;
-      border-radius: 16px;
+      padding: 16px;
+      border-radius: 12px;
       box-shadow: var(--shadow);
-      margin-bottom: 24px;
       border: 1px solid var(--gray-200);
+      height: fit-content;
+      position: sticky;
+      top: 10px;
+      display: flex;
+      flex-direction: column;
     }
 
     .charts-section h3 {
-      font-size: 1.25rem;
+      font-size: 1rem;
       font-weight: 700;
-      margin-bottom: 20px;
+      margin-bottom: 12px;
       color: var(--gray-900);
     }
 
     .charts-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
     }
 
     .chart-container {
       position: relative;
-      height: 250px;
+      height: 160px;
     }
 
     .total-calories-card {
@@ -342,36 +346,43 @@
     .main-content {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 24px;
-      margin-top: 32px;
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .main-content-with-charts {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 16px;
+      margin-top: 16px;
     }
 
     .form-section {
       background: var(--gray-50);
-      padding: 32px;
-      border-radius: 16px;
+      padding: 20px;
+      border-radius: 12px;
       border: 1px solid var(--gray-200);
       height: fit-content;
       position: sticky;
-      top: 20px;
+      top: 10px;
     }
 
     .form-section h2 {
-      font-size: 1.5rem;
+      font-size: 1.25rem;
       font-weight: 700;
       color: var(--gray-900);
-      margin-bottom: 24px;
+      margin-bottom: 16px;
       display: flex;
       align-items: center;
       gap: 8px;
     }
 
     .form-group {
-      margin-bottom: 20px;
+      margin-bottom: 12px;
     }
 
     .quantity-group {
-      margin-bottom: 24px;
+      margin-bottom: 12px;
     }
 
     .quantity-input-wrapper {
@@ -395,19 +406,19 @@
     .nutritional-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: 16px;
+      gap: 10px;
     }
 
     .nutritional-grid .form-group {
-      margin-bottom: 16px;
+      margin-bottom: 12px;
     }
 
     label {
       display: block;
-      margin-bottom: 8px;
+      margin-bottom: 4px;
       color: var(--gray-700);
       font-weight: 600;
-      font-size: 0.875rem;
+      font-size: 0.75rem;
       text-transform: uppercase;
       letter-spacing: 0.05em;
     }
@@ -415,10 +426,10 @@
     input[type="text"],
     input[type="number"] {
       width: 100%;
-      padding: 14px 16px;
+      padding: 10px 12px;
       border: 2px solid var(--gray-200);
-      border-radius: 12px;
-      font-size: 1rem;
+      border-radius: 8px;
+      font-size: 0.9375rem;
       transition: all 0.2s ease;
       background: white;
       font-family: inherit;
@@ -438,9 +449,9 @@
     }
 
     .helper-text {
-      font-size: 0.75rem;
+      font-size: 0.6875rem;
       color: var(--gray-500);
-      margin-top: 6px;
+      margin-top: 4px;
       display: flex;
       align-items: center;
       gap: 4px;
@@ -451,16 +462,16 @@
       background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
       color: white;
       border: none;
-      padding: 18px 40px;
-      border-radius: 14px;
-      font-size: 1.125rem;
+      padding: 14px 32px;
+      border-radius: 10px;
+      font-size: 1rem;
       font-weight: 700;
       cursor: pointer;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       box-shadow: var(--shadow-lg);
       font-family: inherit;
       width: 100%;
-      margin-top: 24px;
+      margin-top: 12px;
       clear: both;
       display: flex;
       align-items: center;
@@ -470,7 +481,7 @@
       overflow: hidden;
       letter-spacing: 0.02em;
       text-transform: uppercase;
-      min-height: 56px;
+      min-height: 48px;
     }
 
     button[type="submit"]::before,
@@ -514,8 +525,8 @@
 
     .food-list {
       background: var(--gray-50);
-      padding: 32px;
-      border-radius: 16px;
+      padding: 20px;
+      border-radius: 12px;
       border: 1px solid var(--gray-200);
       max-height: 600px;
       overflow-y: auto;
@@ -541,10 +552,10 @@
     }
 
     .food-list h2 {
-      font-size: 1.5rem;
+      font-size: 1.25rem;
       font-weight: 700;
       color: var(--gray-900);
-      margin-bottom: 20px;
+      margin-bottom: 16px;
       display: flex;
       align-items: center;
       gap: 8px;
@@ -599,11 +610,20 @@
       font-weight: 500;
     }
 
-    .delete-btn {
-      background: linear-gradient(135deg, var(--danger) 0%, #dc2626 100%);
-      color: white;
-      border: none;
-      padding: 10px 20px;
+    .food-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .edit-btn {
+      width: 85px !important;
+      min-width: 85px !important;
+      max-width: 85px !important;
+      height: 40px !important;
+      padding: 0 !important;
+      margin: 0 !important;
       border-radius: 8px;
       font-size: 0.875rem;
       font-weight: 600;
@@ -613,6 +633,56 @@
       font-family: inherit;
       flex-shrink: 0;
       white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      box-sizing: border-box;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: white;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .edit-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-md);
+      background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%);
+    }
+
+    /* Delete button - applied to form element created by button_to */
+    form.delete-btn,
+    .delete-btn-form {
+      width: 85px !important;
+      min-width: 85px !important;
+      max-width: 85px !important;
+      height: 40px !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      border-radius: 8px !important;
+      font-size: 0.875rem !important;
+      font-weight: 600 !important;
+      cursor: pointer !important;
+      transition: all 0.2s ease !important;
+      box-shadow: var(--shadow-sm) !important;
+      font-family: inherit !important;
+      flex-shrink: 0 !important;
+      white-space: nowrap !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      border: none !important;
+      box-sizing: border-box !important;
+      vertical-align: top !important;
+      background: linear-gradient(135deg, var(--danger) 0%, #dc2626 100%) !important;
+      color: white !important;
+      overflow: hidden !important;
+    }
+
+    form.delete-btn:hover,
+    .delete-btn-form:hover {
+      transform: translateY(-1px) !important;
+      box-shadow: var(--shadow-md) !important;
     }
 
     .delete-btn input[type="submit"] {
@@ -624,11 +694,115 @@
       cursor: pointer;
       padding: 0;
       margin: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: inherit;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
-    .delete-btn:hover {
-      transform: translateY(-1px);
-      box-shadow: var(--shadow-md);
+    /* Modal Styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(4px);
+      animation: fadeIn 0.2s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .modal-content {
+      background-color: white;
+      margin: 5% auto;
+      padding: 0;
+      border-radius: 16px;
+      width: 90%;
+      max-width: 600px;
+      box-shadow: var(--shadow-xl);
+      animation: slideDown 0.3s ease;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    @keyframes slideDown {
+      from {
+        transform: translateY(-50px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 24px;
+      border-bottom: 1px solid var(--gray-200);
+    }
+
+    .modal-header h2 {
+      margin: 0;
+      font-size: 1.5rem;
+      color: var(--gray-800);
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 2rem;
+      color: var(--gray-500);
+      cursor: pointer;
+      padding: 0;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      transition: all 0.2s ease;
+    }
+
+    .modal-close:hover {
+      background: var(--gray-100);
+      color: var(--gray-700);
+    }
+
+    .modal-content .form-section {
+      padding: 24px;
+      border: none;
+      box-shadow: none;
+      margin: 0;
+    }
+
+    .modal-content .form-group {
+      margin-bottom: 16px;
+    }
+
+    .modal-content .nutritional-grid {
+      gap: 12px;
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 12px;
     }
 
     .empty-state {
@@ -733,8 +907,13 @@
         font-size: 2rem;
       }
 
-      .main-content {
+      .main-content,
+      .main-content-with-charts {
         grid-template-columns: 1fr;
+      }
+
+      .charts-section {
+        position: static;
       }
 
       .form-section {
@@ -742,8 +921,13 @@
         position: static;
       }
 
+
       .food-list {
         padding: 20px;
+      }
+
+      .charts-section {
+        margin-top: 24px;
       }
     }
   </style>
@@ -815,7 +999,7 @@
       </div>
     <% end %>
 
-    <div class="main-content">
+    <div class="main-content<%= ' main-content-with-charts' if @nutritional_totals[:calories] > 0 %>">
       <div class="form-section" id="form-section">
       <h2>➕ Add Food Entry</h2>
       <%= form_with url: foods_path, method: :post, local: true do |form| %>
@@ -860,8 +1044,8 @@
           <div class="form-group">
             <%= form.label :sugar, "Sugar (g)" %>
             <%= form.number_field :sugar, id: "sugar", placeholder: "0", min: 0, step: 0.1, value: 0 %>
-        </div>
-        <div class="form-group">
+          </div>
+          <div class="form-group">
             <%= form.label :sodium, "Sodium (mg)" %>
             <%= form.number_field :sodium, id: "sodium", placeholder: "0", min: 0, step: 0.1, value: 0 %>
           </div>
@@ -891,27 +1075,81 @@
                   <% end %>
                 </div>
               </div>
-              <%= button_to "Delete", food_path(food), method: :delete, class: "delete-btn", form: { style: "display: inline;" } %>
+              <div class="food-actions">
+                <button type="button" class="edit-btn" onclick="openEditModal(<%= food.id %>, '<%= j(food.name) %>', <%= food.calories %>, <%= food.protein %>, <%= food.fat %>, <%= food.carbs %>, <%= food.fiber %>, <%= food.sugar %>, <%= food.sodium %>)">Edit</button>
+                <%= button_to "Delete", food_path(food), method: :delete, class: "delete-btn", form: { class: "delete-btn-form" } %>
+              </div>
             </div>
           <% end %>
         <% end %>
       </div>
-    </div>
 
-    <!-- Charts Section -->
-    <% if @nutritional_totals[:calories] > 0 %>
-      <div class="charts-section">
-        <h3>📊 Nutritional Breakdown</h3>
-        <div class="charts-grid">
-          <div class="chart-container">
-            <canvas id="macroChart"></canvas>
-          </div>
-          <div class="chart-container">
-            <canvas id="nutritionChart"></canvas>
+      <!-- Charts Section -->
+      <% if @nutritional_totals[:calories] > 0 %>
+        <div class="charts-section">
+          <h3>📊 Nutritional Breakdown</h3>
+          <div class="charts-grid">
+            <div class="chart-container">
+              <canvas id="macroChart"></canvas>
+            </div>
+            <div class="chart-container">
+              <canvas id="nutritionChart"></canvas>
+            </div>
           </div>
         </div>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Edit Food Modal -->
+  <div id="editModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>✏️ Edit Food Entry</h2>
+        <button type="button" class="modal-close" onclick="closeEditModal()">&times;</button>
       </div>
-    <% end %>
+      <%= form_with model: @food || Food.new, url: foods_path, method: :patch, local: true, id: "edit-food-form", html: { style: "margin: 0;" } do |form| %>
+        <div class="form-section" style="padding: 24px; border: none; box-shadow: none; margin: 0;">
+          <div class="form-group">
+            <%= form.label :name, "Food Name" %>
+            <%= form.text_field :name, id: "edit-name", placeholder: "Food name...", required: true, autocomplete: "off" %>
+          </div>
+          <div class="nutritional-grid">
+            <div class="form-group">
+              <%= form.label :calories, "Calories" %>
+              <%= form.number_field :calories, id: "edit-calories", placeholder: "0", min: 0, step: 0.1, required: true %>
+            </div>
+            <div class="form-group">
+              <%= form.label :protein, "Protein (g)" %>
+              <%= form.number_field :protein, id: "edit-protein", placeholder: "0", min: 0, step: 0.1, value: 0 %>
+            </div>
+            <div class="form-group">
+              <%= form.label :carbs, "Carbs (g)" %>
+              <%= form.number_field :carbs, id: "edit-carbs", placeholder: "0", min: 0, step: 0.1, value: 0 %>
+            </div>
+            <div class="form-group">
+              <%= form.label :fat, "Fat (g)" %>
+              <%= form.number_field :fat, id: "edit-fat", placeholder: "0", min: 0, step: 0.1, value: 0 %>
+            </div>
+            <div class="form-group">
+              <%= form.label :fiber, "Fiber (g)" %>
+              <%= form.number_field :fiber, id: "edit-fiber", placeholder: "0", min: 0, step: 0.1, value: 0 %>
+            </div>
+            <div class="form-group">
+              <%= form.label :sugar, "Sugar (g)" %>
+              <%= form.number_field :sugar, id: "edit-sugar", placeholder: "0", min: 0, step: 0.1, value: 0 %>
+            </div>
+            <div class="form-group">
+              <%= form.label :sodium, "Sodium (mg)" %>
+              <%= form.number_field :sodium, id: "edit-sodium", placeholder: "0", min: 0, step: 0.1, value: 0 %>
+            </div>
+          </div>
+          <div class="form-actions">
+            <%= form.submit "💾 Update", class: "add-button" %>
+          </div>
+        </div>
+      <% end %>
+    </div>
   </div>
 
     <script>
@@ -1120,6 +1358,70 @@
           suggestionsDiv.style.display = 'none';
         }
       });
+
+    // Edit Modal Functions
+    function openEditModal(foodId, name, calories, protein, fat, carbs, fiber, sugar, sodium) {
+      const modal = document.getElementById('editModal');
+      const form = document.getElementById('edit-food-form');
+      
+      // Update form action URL with the food ID
+      form.action = `/foods/${foodId}`;
+      
+      // Ensure method is PATCH
+      const methodInput = form.querySelector('input[name="_method"]');
+      if (methodInput) {
+        methodInput.value = 'patch';
+      } else {
+        const hiddenInput = document.createElement('input');
+        hiddenInput.type = 'hidden';
+        hiddenInput.name = '_method';
+        hiddenInput.value = 'patch';
+        form.appendChild(hiddenInput);
+      }
+      
+      // Populate form fields
+      document.getElementById('edit-name').value = name;
+      document.getElementById('edit-calories').value = calories;
+      document.getElementById('edit-protein').value = protein;
+      document.getElementById('edit-fat').value = fat;
+      document.getElementById('edit-carbs').value = carbs;
+      document.getElementById('edit-fiber').value = fiber;
+      document.getElementById('edit-sugar').value = sugar;
+      document.getElementById('edit-sodium').value = sodium;
+      
+      // Show modal
+      modal.style.display = 'block';
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeEditModal() {
+      const modal = document.getElementById('editModal');
+      modal.style.display = 'none';
+      document.body.style.overflow = 'auto';
+    }
+
+    // Close modal when clicking outside of it
+    window.onclick = function(event) {
+      const modal = document.getElementById('editModal');
+      if (event.target === modal) {
+        closeEditModal();
+      }
+    }
+
+    // Close modal on Escape key
+    document.addEventListener('keydown', function(event) {
+      if (event.key === 'Escape') {
+        closeEditModal();
+      }
+    });
+
+    // Store scroll position before edit form submit
+    const editForm = document.getElementById('edit-food-form');
+    if (editForm) {
+      editForm.addEventListener('submit', function() {
+        sessionStorage.setItem('scrollPosition', window.scrollY.toString());
+      });
+    }
 
     // Date picker handler
     const datePicker = document.getElementById('date-picker');
