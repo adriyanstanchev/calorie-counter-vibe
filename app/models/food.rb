@@ -1,30 +1,24 @@
-# Food model - represents a food entry logged by the user
 class Food < ApplicationRecord
   belongs_to :user
   
   validates :name, presence: true
   validates :calories, presence: true, numericality: { greater_than: 0 }
   
-  # Scope to get foods from a specific date
   scope :on_date, ->(date) { where('DATE(created_at) = ?', date.to_date) }
   scope :today, -> { where('DATE(created_at) = DATE(?)', Time.current) }
   
-  # Class method to get foods for a specific date and user
   def self.for_date(user, date)
     where(user: user).on_date(date).order(created_at: :desc)
   end
   
-  # Class method to get total calories for a specific date and user
   def self.total_calories_for_date(user, date)
     where(user: user).on_date(date).sum(:calories) || 0
   end
   
-  # Class method to get total calories for today for a specific user
   def self.total_calories_today(user)
     total_calories_for_date(user, Date.current)
   end
   
-  # Class method to get nutritional totals for a date
   def self.nutritional_totals_for_date(user, date)
     foods = where(user: user).on_date(date)
     {
@@ -38,53 +32,109 @@ class Food < ApplicationRecord
     }
   end
   
-  # Calculate health score for a date (0-100)
-  # Based on: balanced macros, fiber intake, low sugar/sodium
+  # Calculate health score (0-100) based on:
+  # - Food quality (fiber density, low processed sugar, low sodium, protein density)
+  # - Balanced macros (adjusted for partial days)
+  # - Adequate protein and fiber (scaled for calorie intake)
   def self.health_score_for_date(user, date)
     totals = nutritional_totals_for_date(user, date)
-    return 50 if totals[:calories] == 0 # Default score if no food logged
+    return 50 if totals[:calories] == 0
     
     score = 0
-    max_score = 100
-    
-    # Calorie balance (20 points) - assuming 2000 cal/day target
     calorie_target = 2000
-    calorie_ratio = [totals[:calories] / calorie_target.to_f, 1.0].min
-    score += (20 * (1 - (calorie_ratio - 1).abs * 2)).clamp(0, 20)
+    is_partial_day = totals[:calories] < (calorie_target * 0.5)
     
-    # Protein adequacy (20 points) - target: 0.8g per kg body weight, assume 70kg = 56g
+    if is_partial_day
+      # For partial days, score based on calorie quality, not quantity
+      calorie_ratio = totals[:calories] / (calorie_target * 0.3).to_f
+      score += (15 * [calorie_ratio, 1.0].min).clamp(0, 15)
+    else
+      calorie_ratio = [totals[:calories] / calorie_target.to_f, 1.0].min
+      score += (15 * (1 - (calorie_ratio - 1).abs * 2)).clamp(0, 15)
+    end
+    
+    # Food quality: rewards high fiber density, low processed sugar, low sodium, good protein
+    quality_score = 0
+    foods = where(user: user).on_date(date)
+    
+    foods.each do |food|
+      food_quality = 0
+      
+      if food.fiber > 0 && food.calories > 0
+        fiber_per_cal = food.fiber / food.calories.to_f
+        food_quality += 5 if fiber_per_cal > 0.05
+      end
+      
+      if food.carbs > 0
+        sugar_ratio = food.sugar / food.carbs.to_f
+        food_quality += 5 if sugar_ratio < 0.5
+      end
+      
+      food_quality += 5 if food.sodium < 100
+      
+      if food.protein > 0 && food.calories > 0
+        protein_per_cal = food.protein / food.calories.to_f
+        food_quality += 5 if protein_per_cal > 0.05
+      end
+      
+      calorie_weight = food.calories / totals[:calories].to_f
+      quality_score += food_quality * calorie_weight
+    end
+    
+    score += (20 * [quality_score / 20.0, 1.0].min).clamp(0, 20)
+    
+    # Protein: scale target for partial days
     protein_target = 56
-    protein_ratio = [totals[:protein] / protein_target.to_f, 1.5].min
-    score += (20 * protein_ratio).clamp(0, 20)
+    if is_partial_day
+      scaled_protein_target = protein_target * (totals[:calories] / calorie_target.to_f)
+      protein_ratio = scaled_protein_target > 0 ? [totals[:protein] / scaled_protein_target.to_f, 1.5].min : 0
+    else
+      protein_ratio = [totals[:protein] / protein_target.to_f, 1.5].min
+    end
+    score += (15 * protein_ratio).clamp(0, 15)
     
-    # Macro balance (20 points) - ideal: 30% protein, 30% fat, 40% carbs (by calories)
+    # Macro balance: ideal 30% protein, 30% fat, 40% carbs (by calories)
     total_macro_cals = (totals[:protein] * 4) + (totals[:fat] * 9) + (totals[:carbs] * 4)
-    return score if total_macro_cals == 0
+    if total_macro_cals > 0
+      protein_cal_pct = (totals[:protein] * 4) / total_macro_cals.to_f
+      fat_cal_pct = (totals[:fat] * 9) / total_macro_cals.to_f
+      carbs_cal_pct = (totals[:carbs] * 4) / total_macro_cals.to_f
+      
+      tolerance = is_partial_day ? 0.5 : 0.30
+      
+      protein_score = 5 * (1 - (protein_cal_pct - 0.30).abs / tolerance).clamp(0, 1)
+      fat_score = 5 * (1 - (fat_cal_pct - 0.30).abs / tolerance).clamp(0, 1)
+      carbs_score = 5 * (1 - (carbs_cal_pct - 0.40).abs / tolerance).clamp(0, 1)
+      score += protein_score + fat_score + carbs_score
+    end
     
-    protein_cal_pct = (totals[:protein] * 4) / total_macro_cals.to_f
-    fat_cal_pct = (totals[:fat] * 9) / total_macro_cals.to_f
-    carbs_cal_pct = (totals[:carbs] * 4) / total_macro_cals.to_f
-    
-    # Score based on how close to ideal ratios
-    protein_score = 6.67 * (1 - (protein_cal_pct - 0.30).abs / 0.30).clamp(0, 1)
-    fat_score = 6.67 * (1 - (fat_cal_pct - 0.30).abs / 0.30).clamp(0, 1)
-    carbs_score = 6.67 * (1 - (carbs_cal_pct - 0.40).abs / 0.40).clamp(0, 1)
-    score += protein_score + fat_score + carbs_score
-    
-    # Fiber intake (15 points) - target: 25g/day
+    # Fiber: scale target for partial days
     fiber_target = 25
-    fiber_ratio = [totals[:fiber] / fiber_target.to_f, 1.5].min
+    if is_partial_day
+      scaled_fiber_target = fiber_target * (totals[:calories] / calorie_target.to_f)
+      fiber_ratio = scaled_fiber_target > 0 ? [totals[:fiber] / scaled_fiber_target.to_f, 1.5].min : 0
+    else
+      fiber_ratio = [totals[:fiber] / fiber_target.to_f, 1.5].min
+    end
     score += (15 * fiber_ratio).clamp(0, 15)
     
-    # Low sugar (10 points) - target: < 50g/day
+    # Sugar: full points if under target, penalty if excessive
     sugar_target = 50
-    sugar_penalty = totals[:sugar] > sugar_target ? (totals[:sugar] - sugar_target) / sugar_target.to_f : 0
-    score += (10 * (1 - sugar_penalty.clamp(0, 1))).clamp(0, 10)
+    if totals[:sugar] <= sugar_target
+      score += 10
+    else
+      sugar_penalty = (totals[:sugar] - sugar_target) / sugar_target.to_f
+      score += (10 * (1 - sugar_penalty.clamp(0, 1))).clamp(0, 10)
+    end
     
-    # Low sodium (15 points) - target: < 2300mg/day
+    # Sodium: full points if under target, penalty if excessive
     sodium_target = 2300
-    sodium_penalty = totals[:sodium] > sodium_target ? (totals[:sodium] - sodium_target) / sodium_target.to_f : 0
-    score += (15 * (1 - sodium_penalty.clamp(0, 1))).clamp(0, 15)
+    if totals[:sodium] <= sodium_target
+      score += 10
+    else
+      sodium_penalty = (totals[:sodium] - sodium_target) / sodium_target.to_f
+      score += (10 * (1 - sodium_penalty.clamp(0, 1))).clamp(0, 10)
+    end
     
     score.round
   end

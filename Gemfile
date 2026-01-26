@@ -5,7 +5,7 @@ git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 ruby '3.2.0'
 
 # Rails - Web framework
-gem 'rails', '~> 7.1'
+gem 'rails', '~> 8.1.2'
 
 # SQLite3 - Database driver for SQLite
 gem 'sqlite3', '~> 1.7'

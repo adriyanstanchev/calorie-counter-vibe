@@ -618,15 +618,15 @@
     }
 
     .edit-btn {
-      width: 85px !important;
-      min-width: 85px !important;
-      max-width: 85px !important;
+      width: 40px !important;
+      min-width: 40px !important;
+      max-width: 40px !important;
       height: 40px !important;
       padding: 0 !important;
       margin: 0 !important;
       border-radius: 8px;
-      font-size: 0.875rem;
-      font-weight: 600;
+      font-size: 1.125rem;
+      font-weight: 400;
       cursor: pointer;
       transition: all 0.2s ease;
       box-shadow: var(--shadow-sm);
@@ -636,10 +636,10 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      border: none;
+      border: 1px solid var(--gray-300);
       box-sizing: border-box;
-      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-      color: white;
+      background: white;
+      color: var(--gray-700);
       overflow: hidden;
       text-overflow: ellipsis;
     }
@@ -647,21 +647,24 @@
     .edit-btn:hover {
       transform: translateY(-1px);
       box-shadow: var(--shadow-md);
-      background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%);
+      background: var(--gray-50);
+      border-color: var(--gray-400);
     }
 
     /* Delete button - applied to form element created by button_to */
     form.delete-btn,
-    .delete-btn-form {
-      width: 85px !important;
-      min-width: 85px !important;
-      max-width: 85px !important;
+    .delete-btn-form,
+    .food-actions form.delete-btn,
+    .food-actions .delete-btn-form {
+      width: 40px !important;
+      min-width: 40px !important;
+      max-width: 40px !important;
       height: 40px !important;
       padding: 0 !important;
       margin: 0 !important;
       border-radius: 8px !important;
-      font-size: 0.875rem !important;
-      font-weight: 600 !important;
+      font-size: 1.125rem !important;
+      font-weight: 400 !important;
       cursor: pointer !important;
       transition: all 0.2s ease !important;
       box-shadow: var(--shadow-sm) !important;
@@ -671,38 +674,51 @@
       display: inline-flex !important;
       align-items: center !important;
       justify-content: center !important;
-      border: none !important;
+      border: 1px solid var(--gray-300) !important;
       box-sizing: border-box !important;
       vertical-align: top !important;
-      background: linear-gradient(135deg, var(--danger) 0%, #dc2626 100%) !important;
-      color: white !important;
+      background: white !important;
+      background-color: white !important;
+      background-image: none !important;
+      color: var(--gray-700) !important;
       overflow: hidden !important;
     }
 
     form.delete-btn:hover,
-    .delete-btn-form:hover {
+    .delete-btn-form:hover,
+    .food-actions form.delete-btn:hover,
+    .food-actions .delete-btn-form:hover {
       transform: translateY(-1px) !important;
       box-shadow: var(--shadow-md) !important;
+      background: var(--gray-50) !important;
+      background-color: var(--gray-50) !important;
+      background-image: none !important;
+      border-color: var(--gray-400) !important;
     }
 
-    .delete-btn input[type="submit"] {
-      background: transparent;
-      border: none;
-      color: white;
-      font-size: 0.875rem;
-      font-weight: 600;
-      cursor: pointer;
-      padding: 0;
-      margin: 0;
-      width: 100%;
-      height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: inherit;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+    .delete-btn input[type="submit"],
+    form.delete-btn input[type="submit"],
+    .delete-btn-form input[type="submit"] {
+      background: transparent !important;
+      background-color: transparent !important;
+      background-image: none !important;
+      border: none !important;
+      color: var(--gray-700) !important;
+      font-size: 1.125rem !important;
+      font-weight: 400 !important;
+      cursor: pointer !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      font-family: inherit !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+      white-space: nowrap !important;
+      box-shadow: none !important;
     }
 
     /* Modal Styles */
@@ -1076,8 +1092,8 @@
                 </div>
               </div>
               <div class="food-actions">
-                <button type="button" class="edit-btn" onclick="openEditModal(<%= food.id %>, '<%= j(food.name) %>', <%= food.calories %>, <%= food.protein %>, <%= food.fat %>, <%= food.carbs %>, <%= food.fiber %>, <%= food.sugar %>, <%= food.sodium %>)">Edit</button>
-                <%= button_to "Delete", food_path(food), method: :delete, class: "delete-btn", form: { class: "delete-btn-form" } %>
+                <button type="button" class="edit-btn" onclick="openEditModal(<%= food.id %>, '<%= j(food.name) %>', <%= food.calories %>, <%= food.protein %>, <%= food.fat %>, <%= food.carbs %>, <%= food.fiber %>, <%= food.sugar %>, <%= food.sodium %>)" title="Edit">✎</button>
+                <%= button_to "✕", food_path(food), method: :delete, class: "delete-btn", form: { class: "delete-btn-form" }, title: "Delete" %>
               </div>
             </div>
           <% end %>
