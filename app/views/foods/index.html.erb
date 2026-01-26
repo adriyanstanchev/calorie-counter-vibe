@@ -953,6 +953,7 @@
     <div class="header">
       <div class="user-info">
         <span class="user-email"><%= current_user.email %></span>
+        <%= link_to "Profile", profile_path, class: "profile-link" %>
         <%= button_to "Logout", logout_path, method: :delete, class: "logout-btn", form: { style: "display: inline;" } %>
       </div>
       <h1>🍎 SumLife</h1>
@@ -989,7 +990,15 @@
       </div>
       <div class="stat-card">
         <div class="stat-label">Total Calories</div>
-        <div class="stat-value"><%= @nutritional_totals[:calories].to_i %></div>
+        <div class="stat-value">
+          <%= @nutritional_totals[:calories].to_i %><% if @recommended_calories %>/<%= @recommended_calories %><% end %>
+        </div>
+        <% if @recommended_calories %>
+          <div class="stat-subtitle">
+            <% percentage = (@nutritional_totals[:calories] / @recommended_calories.to_f * 100).round(1) %>
+            <%= percentage %>% of daily goal
+          </div>
+        <% end %>
       </div>
       <div class="stat-card">
         <div class="stat-label">Protein</div>
@@ -1167,6 +1176,46 @@
       <% end %>
     </div>
   </div>
+
+  <!-- Profile Modal (shown after registration if profile is complete) -->
+  <% if @show_profile_modal %>
+    <div id="profileModal" class="modal" style="display: block;">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>🎉 Welcome to SumLife!</h2>
+          <button type="button" class="modal-close" onclick="closeProfileModal()">&times;</button>
+        </div>
+        <div style="padding: 24px;">
+          <p style="margin-bottom: 24px; color: var(--gray-700);">Based on your profile, here's your personalized information:</p>
+          
+          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 24px;">
+            <div style="background: var(--gray-50); padding: 20px; border-radius: 12px; border: 1px solid var(--gray-200);">
+              <div style="font-size: 0.875rem; color: var(--gray-500); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;">BMI</div>
+              <div style="font-size: 2rem; font-weight: 700; color: var(--gray-900);"><%= current_user.bmi %></div>
+              <div style="font-size: 0.875rem; color: var(--gray-500); margin-top: 4px;"><%= current_user.bmi_category %></div>
+            </div>
+            <div style="background: var(--gray-50); padding: 20px; border-radius: 12px; border: 1px solid var(--gray-200);">
+              <div style="font-size: 0.875rem; color: var(--gray-500); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;">Recommended Calories</div>
+              <div style="font-size: 2rem; font-weight: 700; color: var(--gray-900);"><%= current_user.recommended_calories %></div>
+              <div style="font-size: 0.875rem; color: var(--gray-500); margin-top: 4px;">per day</div>
+            </div>
+          </div>
+
+          <div style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%); padding: 16px; border-radius: 12px; margin-bottom: 24px;">
+            <p style="margin: 0; color: var(--gray-700); font-size: 0.9375rem; line-height: 1.6;">
+              <strong>Your Goal:</strong> <%= current_user.goal.humanize %> Weight<br>
+              <strong>Activity Level:</strong> <%= current_user.activity_level.humanize %><br>
+              <strong>BMR:</strong> <%= current_user.bmr.round %> calories/day (basal metabolic rate)<br>
+              <strong>TDEE:</strong> <%= current_user.tdee.round %> calories/day (total daily energy expenditure)
+            </p>
+          </div>
+
+          <button type="button" class="add-button" onclick="closeProfileModal()" style="width: 100%; margin-top: 0;">Got it!</button>
+        </div>
+      </div>
+    </div>
+    <% session.delete(:show_profile_modal) %>
+  <% end %>
 
     <script>
     // Prevent page jump on form submit by preserving scroll position
@@ -1416,11 +1465,23 @@
       document.body.style.overflow = 'auto';
     }
 
+    function closeProfileModal() {
+      const modal = document.getElementById('profileModal');
+      if (modal) {
+        modal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+      }
+    }
+
     // Close modal when clicking outside of it
     window.onclick = function(event) {
-      const modal = document.getElementById('editModal');
-      if (event.target === modal) {
+      const editModal = document.getElementById('editModal');
+      const profileModal = document.getElementById('profileModal');
+      if (event.target === editModal) {
         closeEditModal();
+      }
+      if (event.target === profileModal) {
+        closeProfileModal();
       }
     }
 
@@ -1428,6 +1489,7 @@
     document.addEventListener('keydown', function(event) {
       if (event.key === 'Escape') {
         closeEditModal();
+        closeProfileModal();
       }
     });
 

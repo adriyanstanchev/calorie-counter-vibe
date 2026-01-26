@@ -7,6 +7,10 @@ Rails.application.routes.draw do
   get '/register', to: 'users#new'
   post '/register', to: 'users#create'
   
+  # Profile routes
+  get '/profile', to: 'users#show', as: 'profile'
+  patch '/profile', to: 'users#update'
+  
   # Root route - show the main page (requires login)
   root 'foods#index'
   

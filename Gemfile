@@ -8,7 +8,7 @@ ruby '3.2.0'
 gem 'rails', '~> 8.1.2'
 
 # SQLite3 - Database driver for SQLite
-gem 'sqlite3', '~> 1.7'
+gem 'sqlite3', '~> 2.1'
 
 # Puma - Web server
 gem 'puma', '~> 6.0'

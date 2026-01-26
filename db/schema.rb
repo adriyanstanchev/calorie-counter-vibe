@@ -10,43 +10,49 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_01_23_105310) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_24_000001) do
   create_table "common_foods", force: :cascade do |t|
-    t.string "name", null: false
-    t.integer "calories_per_serving", null: false
-    t.string "serving_size"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.decimal "protein"
-    t.decimal "fat"
-    t.decimal "carbs"
-    t.decimal "fiber"
-    t.decimal "sugar"
-    t.decimal "sodium"
     t.decimal "base_quantity", precision: 8, scale: 2, default: "1.0"
+    t.integer "calories_per_serving", null: false
+    t.decimal "carbs"
+    t.datetime "created_at", null: false
+    t.decimal "fat"
+    t.decimal "fiber"
+    t.string "name", null: false
+    t.decimal "protein"
+    t.string "serving_size"
+    t.decimal "sodium"
+    t.decimal "sugar"
+    t.datetime "updated_at", null: false
     t.index ["name"], name: "index_common_foods_on_name", unique: true
   end
 
   create_table "foods", force: :cascade do |t|
-    t.string "name", null: false
     t.integer "calories", null: false
+    t.decimal "carbs"
     t.datetime "created_at", null: false
+    t.decimal "fat"
+    t.decimal "fiber"
+    t.string "name", null: false
+    t.decimal "protein"
+    t.decimal "sodium"
+    t.decimal "sugar"
     t.datetime "updated_at", null: false
     t.integer "user_id", null: false
-    t.decimal "protein"
-    t.decimal "fat"
-    t.decimal "carbs"
-    t.decimal "fiber"
-    t.decimal "sugar"
-    t.decimal "sodium"
     t.index ["user_id"], name: "index_foods_on_user_id"
   end
 
   create_table "users", force: :cascade do |t|
-    t.string "email", null: false
-    t.string "password_digest", null: false
+    t.string "activity_level"
+    t.integer "age"
     t.datetime "created_at", null: false
+    t.string "email", null: false
+    t.string "gender"
+    t.string "goal"
+    t.decimal "height", precision: 5, scale: 2
+    t.string "password_digest", null: false
     t.datetime "updated_at", null: false
+    t.decimal "weight", precision: 5, scale: 2
     t.index ["email"], name: "index_users_on_email", unique: true
   end
 

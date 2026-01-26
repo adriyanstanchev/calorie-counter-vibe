@@ -11,6 +11,13 @@ class FoodsController < ApplicationController
     # Get date range for navigation
     @earliest_date = current_user.foods.minimum(:created_at)&.to_date || Date.current
     @latest_date = current_user.foods.maximum(:created_at)&.to_date || Date.current
+    
+    # Get recommended calories from user profile
+    @recommended_calories = current_user.recommended_calories
+    
+    # Check if we should show profile modal (set in session after registration)
+    @show_profile_modal = session[:show_profile_modal] && current_user.profile_complete?
+    session.delete(:show_profile_modal) if @show_profile_modal
   end
   
   # POST /foods - Create a new food entry
