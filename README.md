@@ -1,6 +1,6 @@
 # SumLife
 
-A comprehensive nutrition tracking web application built with Ruby on Rails.
+A comprehensive nutrition tracking web application built with Ruby on Rails. Also, this is my first time not dabbling with web stuff. I'll try to level up, read a few books/ruby documentation, etc.
 
 ## Features
 
