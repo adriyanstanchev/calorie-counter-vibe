@@ -220,7 +220,7 @@
 
     .stats-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
       gap: 12px;
       margin-bottom: 16px;
     }
@@ -232,6 +232,9 @@
       box-shadow: var(--shadow);
       text-align: center;
       border: 1px solid var(--gray-200);
+      min-width: 0;
+      overflow: hidden;
+      word-wrap: break-word;
     }
 
     .stat-card.health-score {
@@ -254,6 +257,14 @@
       font-weight: 800;
       line-height: 1;
       margin-bottom: 4px;
+      word-break: break-word;
+      overflow-wrap: break-word;
+    }
+
+    .total-calories-stat .stat-value,
+    .total-calories-value {
+      font-size: 1.5rem;
+      font-weight: 700;
     }
 
     .health-score-value {
@@ -673,7 +684,9 @@
     form.delete-btn,
     .delete-btn-form,
     .food-actions form.delete-btn,
-    .food-actions .delete-btn-form {
+    .food-actions .delete-btn-form,
+    form[action*="/foods"][method="post"]:has(input[name="_method"][value="delete"]),
+    form[action*="/foods"]:has(input[name="_method"][value="delete"]) {
       width: 40px !important;
       min-width: 40px !important;
       max-width: 40px !important;
@@ -692,14 +705,14 @@
       display: inline-flex !important;
       align-items: center !important;
       justify-content: center !important;
-      border: 1px solid var(--gray-300) !important;
+      border: 1px solid rgba(239, 68, 68, 0.3) !important;
       box-sizing: border-box !important;
-      vertical-align: top !important;
-      background: white !important;
-      background-color: white !important;
+      background: rgba(239, 68, 68, 1) !important;
+      background-color: rgba(239, 68, 68, 1) !important;
       background-image: none !important;
-      color: var(--gray-700) !important;
+      color: white !important;
       overflow: hidden !important;
+      vertical-align: top !important;
     }
 
     form.delete-btn:hover,
@@ -708,10 +721,10 @@
     .food-actions .delete-btn-form:hover {
       transform: translateY(-1px) !important;
       box-shadow: var(--shadow-md) !important;
-      background: var(--gray-50) !important;
-      background-color: var(--gray-50) !important;
+      background: rgba(220, 38, 38, 1) !important;
+      background-color: rgba(220, 38, 38, 1) !important;
       background-image: none !important;
-      border-color: var(--gray-400) !important;
+      border-color: rgba(220, 38, 38, 0.5) !important;
     }
 
     .delete-btn input[type="submit"],
@@ -721,7 +734,7 @@
       background-color: transparent !important;
       background-image: none !important;
       border: none !important;
-      color: var(--gray-700) !important;
+      color: white !important;
       font-size: 1.125rem !important;
       font-weight: 400 !important;
       cursor: pointer !important;
@@ -737,6 +750,11 @@
       text-overflow: ellipsis !important;
       white-space: nowrap !important;
       box-shadow: none !important;
+      -webkit-appearance: none !important;
+      -moz-appearance: none !important;
+      appearance: none !important;
+      line-height: 1 !important;
+      vertical-align: middle !important;
     }
 
     /* Modal Styles */
@@ -966,8 +984,13 @@
         font-size: 0.6875rem;
       }
 
+      .total-calories-stat .stat-value,
       .total-calories-value {
-        font-size: 2rem;
+        font-size: 1.25rem;
+      }
+      
+      .stats-grid {
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
       }
 
       .main-content,
@@ -1034,9 +1057,9 @@
         </div>
         <div class="stat-subtitle">out of 100</div>
       </div>
-      <div class="stat-card">
+      <div class="stat-card total-calories-stat">
         <div class="stat-label">Total Calories</div>
-        <div class="stat-value">
+        <div class="stat-value total-calories-value">
           <%= @nutritional_totals[:calories].to_i %><% if @recommended_calories %>/<%= @recommended_calories %><% end %>
         </div>
         <% if @recommended_calories %>
@@ -1748,9 +1771,9 @@
               <%= (@nutritional_totals[:sodium] / 100).round(1) %>
             ],
             backgroundColor: [
-              'rgba(16, 185, 129, 0.8)',
-              'rgba(239, 68, 68, 0.8)',
-              'rgba(99, 102, 241, 0.8)'
+              'rgba(147, 51, 234, 0.8)',  // Purple for Fiber
+              'rgba(236, 72, 153, 0.8)',  // Pink for Sugar
+              'rgba(20, 184, 166, 0.8)'   // Teal for Sodium
             ],
             borderRadius: 8
           }]
