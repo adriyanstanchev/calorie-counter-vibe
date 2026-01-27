@@ -680,81 +680,48 @@
       border-color: var(--gray-400);
     }
 
-    /* Delete button - applied to form element created by button_to */
-    form.delete-btn,
-    .delete-btn-form,
-    .food-actions form.delete-btn,
-    .food-actions .delete-btn-form,
-    form[action*="/foods"][method="post"]:has(input[name="_method"][value="delete"]),
-    form[action*="/foods"]:has(input[name="_method"][value="delete"]) {
-      width: 40px !important;
-      min-width: 40px !important;
-      max-width: 40px !important;
-      height: 40px !important;
-      padding: 0 !important;
-      margin: 0 !important;
-      border-radius: 8px !important;
-      font-size: 1.125rem !important;
-      font-weight: 400 !important;
-      cursor: pointer !important;
-      transition: all 0.2s ease !important;
-      box-shadow: var(--shadow-sm) !important;
-      font-family: inherit !important;
-      flex-shrink: 0 !important;
-      white-space: nowrap !important;
-      display: inline-flex !important;
-      align-items: center !important;
-      justify-content: center !important;
-      border: 1px solid rgba(239, 68, 68, 0.3) !important;
-      box-sizing: border-box !important;
-      background: rgba(239, 68, 68, 1) !important;
-      background-color: rgba(239, 68, 68, 1) !important;
-      background-image: none !important;
-      color: white !important;
-      overflow: hidden !important;
-      vertical-align: top !important;
+    /* Delete button - plain button with icon */
+    .delete-btn {
+      width: 40px;
+      min-width: 40px;
+      max-width: 40px;
+      height: 40px;
+      padding: 0;
+      margin: 0;
+      border-radius: 8px;
+      font-size: 1.125rem;
+      font-weight: 400;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: var(--shadow-sm);
+      font-family: inherit;
+      flex-shrink: 0;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      box-sizing: border-box;
+      background: rgba(239, 68, 68, 1);
+      background-color: rgba(239, 68, 68, 1);
+      background-image: none;
+      color: white;
+      overflow: hidden;
+      vertical-align: top;
+      line-height: 1;
     }
 
-    form.delete-btn:hover,
-    .delete-btn-form:hover,
-    .food-actions form.delete-btn:hover,
-    .food-actions .delete-btn-form:hover {
-      transform: translateY(-1px) !important;
-      box-shadow: var(--shadow-md) !important;
-      background: rgba(220, 38, 38, 1) !important;
-      background-color: rgba(220, 38, 38, 1) !important;
-      background-image: none !important;
-      border-color: rgba(220, 38, 38, 0.5) !important;
+    .delete-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-md);
+      background: rgba(220, 38, 38, 1);
+      background-color: rgba(220, 38, 38, 1);
+      background-image: none;
+      border-color: rgba(220, 38, 38, 0.5);
     }
 
-    .delete-btn input[type="submit"],
-    form.delete-btn input[type="submit"],
-    .delete-btn-form input[type="submit"] {
-      background: transparent !important;
-      background-color: transparent !important;
-      background-image: none !important;
-      border: none !important;
-      color: white !important;
-      font-size: 1.125rem !important;
-      font-weight: 400 !important;
-      cursor: pointer !important;
-      padding: 0 !important;
-      margin: 0 !important;
-      width: 100% !important;
-      height: 100% !important;
-      display: flex !important;
-      align-items: center !important;
-      justify-content: center !important;
-      font-family: inherit !important;
-      overflow: hidden !important;
-      text-overflow: ellipsis !important;
-      white-space: nowrap !important;
-      box-shadow: none !important;
-      -webkit-appearance: none !important;
-      -moz-appearance: none !important;
-      appearance: none !important;
-      line-height: 1 !important;
-      vertical-align: middle !important;
+    .delete-btn:active {
+      transform: translateY(0);
     }
 
     /* Modal Styles */
@@ -1171,7 +1138,7 @@
               </div>
               <div class="food-actions">
                 <button type="button" class="edit-btn" onclick="openEditModal(<%= food.id %>, '<%= j(food.name) %>', <%= food.calories %>, <%= food.protein %>, <%= food.fat %>, <%= food.carbs %>, <%= food.fiber %>, <%= food.sugar %>, <%= food.sodium %>)" title="Edit">✎</button>
-                <%= button_to "✕", food_path(food), method: :delete, class: "delete-btn", form: { class: "delete-btn-form" }, title: "Delete" %>
+                <button type="button" class="delete-btn" onclick="deleteFood(<%= food.id %>)" title="Delete">🗑</button>
               </div>
             </div>
           <% end %>
@@ -1657,6 +1624,37 @@
       const modal = document.getElementById('editModal');
       modal.style.display = 'none';
       document.body.style.overflow = 'auto';
+    }
+
+    function deleteFood(foodId) {
+      if (confirm('Are you sure you want to delete this food entry?')) {
+        // Create a form to submit DELETE request
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/foods/${foodId}`;
+        
+        // Add CSRF token
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'authenticity_token';
+        csrfInput.value = csrfToken;
+        form.appendChild(csrfInput);
+        
+        // Add method override for DELETE
+        const methodInput = document.createElement('input');
+        methodInput.type = 'hidden';
+        methodInput.name = '_method';
+        methodInput.value = 'delete';
+        form.appendChild(methodInput);
+        
+        // Store scroll position
+        sessionStorage.setItem('scrollPosition', window.scrollY.toString());
+        
+        // Submit form
+        document.body.appendChild(form);
+        form.submit();
+      }
     }
 
     function closeProfileModal() {
