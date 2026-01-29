@@ -85,72 +85,122 @@
       right: 0;
       display: flex;
       align-items: center;
-      gap: 12px;
-      flex-wrap: wrap;
       justify-content: flex-end;
-      max-width: 50%;
     }
 
-    .user-email {
+    .user-dropdown {
+      position: relative;
+      display: inline-block;
+    }
+
+    .user-dropdown-toggle {
       color: var(--gray-700);
       font-size: 0.875rem;
       font-weight: 500;
-      text-decoration: none;
       background: var(--gray-200);
       padding: 6px 12px;
       border-radius: 6px;
       border: 1px solid var(--gray-300);
       transition: all 0.2s ease;
-      display: inline-block;
       cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
       max-width: 200px;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
+      font-family: inherit;
     }
 
-    .user-email:hover {
+    .user-dropdown-toggle:hover {
       background: var(--primary);
       color: white;
       border-color: var(--primary);
-      text-decoration: none;
       transform: translateY(-1px);
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
+
+    .dropdown-arrow {
+      font-size: 0.625rem;
+      transition: transform 0.2s ease;
     }
 
-    .logout-btn,
-    .logout-btn input[type="submit"],
-    form[action*="logout"] input[type="submit"] {
-      background: var(--gray-200) !important;
-      color: var(--gray-700) !important;
-      border: none !important;
-      padding: 3px 8px !important;
-      border-radius: 4px !important;
-      font-size: 0.625rem !important;
-      font-weight: 500 !important;
-      cursor: pointer;
+    .user-dropdown.active .dropdown-arrow {
+      transform: rotate(180deg);
+    }
+
+    .user-dropdown-menu {
+      position: absolute;
+      top: calc(100% + 4px);
+      right: 0;
+      background: white;
+      border: 1px solid var(--gray-300);
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      min-width: 160px;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-8px);
       transition: all 0.2s ease;
+      z-index: 1000;
+      overflow: hidden;
+    }
+
+    .user-dropdown.active .user-dropdown-menu {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+
+    .dropdown-item {
+      display: block;
+      padding: 10px 16px;
+      color: var(--gray-700);
       text-decoration: none;
-      display: inline-block;
+      font-size: 0.875rem;
+      transition: background 0.2s ease;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+      cursor: pointer;
       font-family: inherit;
-      white-space: nowrap;
-      line-height: 1.2;
-      min-height: auto;
-      height: auto;
     }
 
-    .logout-btn:hover,
-    .logout-btn input[type="submit"]:hover,
-    form[action*="logout"] input[type="submit"]:hover {
-      background: var(--gray-300) !important;
-      transform: translateY(-1px);
+    .dropdown-item:hover {
+      background: var(--gray-100);
+      color: var(--gray-900);
     }
 
-    form[action*="logout"] {
-      display: inline;
-      margin: 0;
+    .dropdown-item.logout-item {
+      color: var(--gray-700);
+    }
+
+    .dropdown-item.logout-item:hover {
+      background: var(--gray-100);
+      color: var(--gray-900);
+    }
+
+    .dropdown-item.logout-item input[type="submit"] {
+      background: none !important;
+      border: none !important;
+      color: inherit;
+      font-size: inherit;
+      font-family: inherit;
+      cursor: pointer;
       padding: 0;
+      width: 100%;
+      text-align: left;
+    }
+
+    .dropdown-item.logout-item input[type="submit"]:hover,
+    .dropdown-item.logout-item input[type="submit"]:focus,
+    .dropdown-item.logout-item input[type="submit"]:active {
+      background: none !important;
+      border: none !important;
+      outline: none !important;
+      box-shadow: none !important;
     }
 
     .header h1 {
@@ -986,12 +1036,17 @@
         max-width: 100%;
         justify-content: center;
         left: 0;
-        right: 0;
+        right: auto;
       }
 
-      .user-email {
+      .user-dropdown-toggle {
         max-width: 150px;
         font-size: 0.75rem;
+      }
+
+      .user-dropdown-menu {
+        right: auto;
+        left: 0;
       }
 
       .logout-btn {
@@ -1041,8 +1096,16 @@
         <p class="subtitle">Track your daily nutrition with ease</p>
       </div>
       <div class="user-info">
-        <%= link_to current_user.email, profile_path, class: "user-email profile-link" %>
-        <%= button_to "Logout", logout_path, method: :delete, class: "logout-btn", form: { style: "display: inline;" } %>
+        <div class="user-dropdown">
+          <button class="user-dropdown-toggle" onclick="toggleUserDropdown()">
+            <%= current_user.email %>
+            <span class="dropdown-arrow">▼</span>
+          </button>
+          <div class="user-dropdown-menu" id="userDropdownMenu">
+            <%= link_to "⚙ Settings", profile_path, class: "dropdown-item" %>
+            <%= button_to "→ Logout", logout_path, method: :delete, class: "dropdown-item logout-item", form: { style: "margin: 0; padding: 0; border: none; background: none;" } %>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -1999,6 +2062,23 @@
         healthScoreEl.style.color = '#ef4444';
       }
     }
+
+    // User dropdown toggle
+    function toggleUserDropdown() {
+      const dropdown = document.querySelector('.user-dropdown');
+      dropdown.classList.toggle('active');
+    }
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(event) {
+      const dropdown = document.querySelector('.user-dropdown');
+      const toggle = document.querySelector('.user-dropdown-toggle');
+      const menu = document.getElementById('userDropdownMenu');
+      
+      if (dropdown && !dropdown.contains(event.target)) {
+        dropdown.classList.remove('active');
+      }
+    });
   </script>
 </body>
 </html>
