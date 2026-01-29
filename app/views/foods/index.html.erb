@@ -432,6 +432,30 @@
       white-space: nowrap;
     }
 
+    .quantity-unit-select {
+      padding: 8px 12px;
+      border: 2px solid var(--gray-200);
+      border-radius: 8px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--gray-700);
+      background: white;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: inherit;
+      min-width: 100px;
+    }
+
+    .quantity-unit-select:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+
+    .quantity-unit-select:hover {
+      border-color: var(--gray-300);
+    }
+
     .nutritional-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -886,6 +910,14 @@
       align-items: center;
     }
 
+    .no-results-message {
+      padding: 20px 16px;
+      text-align: center;
+      color: var(--gray-500);
+      font-size: 0.875rem;
+      font-style: italic;
+    }
+
     .food-suggestion-item {
       padding: 14px 16px;
       cursor: pointer;
@@ -1063,8 +1095,10 @@
     <div class="main-content<%= ' main-content-with-charts' if @nutritional_totals[:calories] > 0 %>">
       <div class="form-section" id="form-section">
       <h2>➕ Add Food Entry</h2>
-      <%= form_with url: foods_path, method: :post, local: true do |form| %>
+      <%= form_with url: foods_path, method: :post, local: true, id: "add-food-form" do |form| %>
         <%= form.hidden_field :date, value: @selected_date %>
+        <%= form.hidden_field :quantity, id: "form-quantity", value: 1 %>
+        <%= form.hidden_field :unit, id: "form-unit", value: "serving" %>
         <div class="form-group">
           <%= form.label :name, "Food Name" %>
           <div class="food-search-container">
@@ -1077,7 +1111,11 @@
           <%= form.label :quantity, "Quantity/Amount" %>
           <div class="quantity-input-wrapper">
             <%= form.number_field :quantity, id: "quantity", placeholder: "1", min: 0.1, step: 0.1, value: 1, class: "quantity-input" %>
-            <span id="quantity-unit" class="quantity-unit">serving(s)</span>
+            <select id="quantity-unit-select" class="quantity-unit-select">
+              <option value="serving">serving(s)</option>
+              <option value="g">g</option>
+              <option value="ml">ml</option>
+            </select>
           </div>
           <div class="helper-text" id="base-serving-info">Base: 1 serving</div>
         </div>
@@ -1111,7 +1149,7 @@
             <%= form.number_field :sodium, id: "sodium", placeholder: "0", min: 0, step: 0.1, value: 0 %>
           </div>
         </div>
-        <%= form.submit "➕ Add", class: "add-button" %>
+        <%= form.submit "➕ Add", class: "add-button", id: "add-food-submit" %>
       <% end %>
       </div>
 
@@ -1271,10 +1309,23 @@
         }
       });
 
-      // Store scroll position before form submit
-      const form = document.querySelector('form[action="/foods"]');
+      // Store scroll position before form submit and update hidden fields
+      const form = document.getElementById('add-food-form');
       if (form) {
         form.addEventListener('submit', function(e) {
+          // Update hidden fields with current quantity and unit
+          const quantityInput = document.getElementById('quantity');
+          const unitSelect = document.getElementById('quantity-unit-select');
+          const formQuantity = document.getElementById('form-quantity');
+          const formUnit = document.getElementById('form-unit');
+          
+          if (quantityInput && formQuantity) {
+            formQuantity.value = quantityInput.value || 1;
+          }
+          if (unitSelect && formUnit) {
+            formUnit.value = unitSelect.value || 'serving';
+          }
+          
           // Store current scroll position
           sessionStorage.setItem('scrollPosition', window.scrollY.toString());
         });
@@ -1303,12 +1354,33 @@
       }
       
       const quantityInput = document.getElementById('quantity');
+      const unitSelect = document.getElementById('quantity-unit-select');
       if (!quantityInput) return;
       
       const quantity = parseFloat(quantityInput.value) || baseValues.baseQuantity;
+      const selectedUnit = unitSelect ? unitSelect.value : 'serving';
       
-      // Calculate multiplier: user_quantity / base_quantity
-      const multiplier = quantity / baseValues.baseQuantity;
+      // Calculate multiplier based on selected unit
+      // baseValues are always per base_quantity
+      let multiplier;
+      if (selectedUnit === 'g' || selectedUnit === 'ml') {
+        // User is entering grams or milliliters, base_quantity is in the same unit
+        // For liquids, 1ml ≈ 1g, so we can treat them the same
+        multiplier = quantity / baseValues.baseQuantity;
+      } else {
+        // User is entering servings
+        // If base_quantity = 100g/ml, then 1 serving = 100g/ml, so multiplier = quantity
+        // If base_quantity = 1, then it's per serving, so multiplier = quantity / 1
+        // For simplicity: if base_quantity >= 50, treat as grams/ml-based (1 serving = base_quantity)
+        // Otherwise, treat as serving-based
+        if (baseValues.baseQuantity >= 50) {
+          // Base is in grams/ml (e.g., 100g or 250ml), so 1 serving = base_quantity
+          multiplier = quantity; // quantity servings * base_quantity per serving / base_quantity = quantity
+        } else {
+          // Base is per serving (base_quantity = 1)
+          multiplier = quantity / baseValues.baseQuantity;
+        }
+      }
       
       // Update all nutritional fields
       const caloriesEl = document.getElementById('calories');
@@ -1330,9 +1402,54 @@
 
     // Listen for quantity changes
     const quantityInput = document.getElementById('quantity');
+    const unitSelect = document.getElementById('quantity-unit-select');
+    let currentUnit = 'serving'; // Track current unit for conversion
+    
     if (quantityInput) {
       quantityInput.addEventListener('input', calculateNutritionalValues);
       quantityInput.addEventListener('change', calculateNutritionalValues);
+    }
+    
+    // Handle unit switching
+    if (unitSelect) {
+      unitSelect.addEventListener('change', function() {
+        const newUnit = this.value;
+        const quantity = parseFloat(quantityInput.value) || 1;
+        
+        if (!baseValues || Object.keys(baseValues).length === 0) {
+          // No base values set, just update the unit
+          currentUnit = newUnit;
+          return;
+        }
+        
+        // Convert quantity when switching units
+        if (currentUnit === 'serving' && newUnit === 'g') {
+          // Convert from serving to grams
+          const convertedQuantity = quantity * baseValues.baseQuantity;
+          quantityInput.value = convertedQuantity.toFixed(1);
+        } else if (currentUnit === 'serving' && newUnit === 'ml') {
+          // Convert from serving to milliliters (treat similar to grams for liquids)
+          const convertedQuantity = quantity * baseValues.baseQuantity;
+          quantityInput.value = convertedQuantity.toFixed(1);
+        } else if (currentUnit === 'g' && newUnit === 'serving') {
+          // Convert from grams to serving
+          const convertedQuantity = quantity / baseValues.baseQuantity;
+          quantityInput.value = convertedQuantity.toFixed(2);
+        } else if (currentUnit === 'g' && newUnit === 'ml') {
+          // Convert from grams to milliliters (1g ≈ 1ml for water/liquids)
+          quantityInput.value = quantity.toFixed(1);
+        } else if (currentUnit === 'ml' && newUnit === 'serving') {
+          // Convert from milliliters to serving
+          const convertedQuantity = quantity / baseValues.baseQuantity;
+          quantityInput.value = convertedQuantity.toFixed(2);
+        } else if (currentUnit === 'ml' && newUnit === 'g') {
+          // Convert from milliliters to grams (1ml ≈ 1g for water/liquids)
+          quantityInput.value = quantity.toFixed(1);
+        }
+        
+        currentUnit = newUnit;
+        calculateNutritionalValues();
+      });
     }
 
       nameInput.addEventListener('input', function() {
@@ -1374,8 +1491,10 @@
                   fetchFoodDataFromAPI(query);
                   return;
                 }
-                suggestionsDiv.style.display = 'none';
+                // Show "no results" message for short queries
+                suggestionsDiv.innerHTML = '<div class="no-results-message">No matches found. Try searching with 3+ characters to search online.</div>';
                 suggestionsDiv.className = 'food-suggestions';
+                suggestionsDiv.style.display = 'block';
                 return;
               }
               
@@ -1430,26 +1549,21 @@
                   }
                   
                   // Update unit display
-                  const unitSpan = document.getElementById('quantity-unit');
+                  const unitSelect = document.getElementById('quantity-unit-select');
                   const servingInfo = document.getElementById('base-serving-info');
                   
-                  if (unitSpan && servingInfo) {
-                    if (baseValues.baseQuantity === 100) {
-                      unitSpan.textContent = 'g';
-                      servingInfo.textContent = `Base: ${baseValues.servingSize}`;
-                    } else if (baseValues.servingSize && baseValues.servingSize.includes('oz')) {
-                      unitSpan.textContent = 'oz';
-                      servingInfo.textContent = `Base: ${baseValues.servingSize}`;
-                    } else if (baseValues.servingSize && baseValues.servingSize.includes('cup')) {
-                      unitSpan.textContent = 'cup(s)';
-                      servingInfo.textContent = `Base: ${baseValues.servingSize}`;
-                    } else if (baseValues.servingSize && baseValues.servingSize.includes('tbsp')) {
-                      unitSpan.textContent = 'tbsp';
-                      servingInfo.textContent = `Base: ${baseValues.servingSize}`;
+                  if (unitSelect && servingInfo) {
+                    // Set the unit select based on base quantity and serving size
+                    const servingSize = baseValues.servingSize || '';
+                    if (servingSize.includes('ml') || servingSize.includes('mL') || servingSize.includes('milliliter')) {
+                      unitSelect.value = 'ml';
+                    } else if (baseValues.baseQuantity === 100) {
+                      unitSelect.value = 'g';
                     } else {
-                      unitSpan.textContent = 'serving(s)';
-                      servingInfo.textContent = `Base: ${baseValues.servingSize}`;
+                      unitSelect.value = 'serving';
                     }
+                    servingInfo.textContent = `Base: ${baseValues.servingSize}`;
+                    currentUnit = unitSelect.value;
                   }
                   
                   // Calculate and set values based on quantity
@@ -1502,13 +1616,25 @@
           return response.json();
         })
         .then(foodData => {
-          // Hide loading indicator
+          // Check if we got an error or no data
+          if (foodData.error || !foodData.name) {
+            // Show "no results" message
+            suggestionsDiv.innerHTML = '<div class="no-results-message">No nutritional data found. You can still enter this food manually.</div>';
+            suggestionsDiv.className = 'food-suggestions';
+            suggestionsDiv.style.display = 'block';
+            return;
+          }
+          
+          // Hide suggestions if we got valid data (it will auto-populate)
           suggestionsDiv.style.display = 'none';
           suggestionsDiv.className = 'food-suggestions';
           
           // Auto-populate form fields with fetched data
           if (foodData.name && nameInput.value.trim().toLowerCase() === foodName.toLowerCase()) {
-            // Set base values for 100g (standard)
+            // Set base values - use API serving size or default to 100g
+            const baseQty = foodData.base_quantity || 100;
+            const servingSize = foodData.serving_size || '100g';
+            
             baseValues = {
               calories: foodData.calories || 0,
               protein: foodData.protein || 0,
@@ -1517,23 +1643,48 @@
               fiber: foodData.fiber || 0,
               sugar: foodData.sugar || 0,
               sodium: foodData.sodium || 0,
-              baseQuantity: foodData.base_quantity || 100,
-              servingSize: foodData.serving_size || '100g'
+              baseQuantity: baseQty,
+              servingSize: servingSize
             };
             
-            // Set quantity to 100g
+            // Set quantity to base quantity
             const quantityInput = document.getElementById('quantity');
             if (quantityInput) {
-              quantityInput.value = 100;
+              quantityInput.value = baseQty;
             }
             
-            // Update unit display
-            const unitSpan = document.getElementById('quantity-unit');
+            // Update unit display based on serving size
+            const unitSelect = document.getElementById('quantity-unit-select');
             const servingInfo = document.getElementById('base-serving-info');
             
-            if (unitSpan && servingInfo) {
-              unitSpan.textContent = 'g';
-              servingInfo.textContent = 'Base: 100g';
+            if (unitSelect && servingInfo) {
+              // Parse serving size to determine unit
+              if (servingSize.includes('ml') || servingSize.includes('mL') || servingSize.includes('milliliter')) {
+                unitSelect.value = 'ml';
+                servingInfo.textContent = `Base: ${servingSize}`;
+              } else if (servingSize.includes('g') && baseQty === 100) {
+                unitSelect.value = 'g';
+                servingInfo.textContent = `Base: ${servingSize}`;
+              } else if (servingSize.includes('oz')) {
+                unitSelect.value = 'g'; // Use grams for oz-based foods
+                servingInfo.textContent = `Base: ${servingSize}`;
+              } else if (servingSize.includes('cup')) {
+                unitSelect.value = 'serving';
+                servingInfo.textContent = `Base: ${servingSize}`;
+              } else if (servingSize.includes('serving') || servingSize.includes('piece') || servingSize.includes('slice')) {
+                unitSelect.value = 'serving';
+                servingInfo.textContent = `Base: ${servingSize}`;
+              } else {
+                // Default to grams if base quantity is 100, otherwise use serving
+                if (baseQty === 100) {
+                  unitSelect.value = 'g';
+                  servingInfo.textContent = `Base: ${servingSize}`;
+                } else {
+                  unitSelect.value = 'serving';
+                  servingInfo.textContent = `Base: ${servingSize}`;
+                }
+              }
+              currentUnit = unitSelect.value;
             }
             
             // Calculate and populate nutritional values
@@ -1543,10 +1694,10 @@
           }
         })
         .catch(error => {
-          // Hide loading indicator on error
-          suggestionsDiv.style.display = 'none';
+          // Show "no results" message on error
+          suggestionsDiv.innerHTML = '<div class="no-results-message">Could not fetch nutritional data. You can still enter this food manually.</div>';
           suggestionsDiv.className = 'food-suggestions';
-          // Silently fail - user can still manually enter the food
+          suggestionsDiv.style.display = 'block';
           console.log('Could not fetch food data:', error.message);
         });
     }

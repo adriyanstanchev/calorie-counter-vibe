@@ -38,11 +38,14 @@ class FoodsController < ApplicationController
     fiber = params[:fiber].to_f
     sugar = params[:sugar].to_f
     sodium = params[:sodium].to_f
+    quantity = params[:quantity].to_f
+    unit = params[:unit] || 'serving'
     
     # Use selected date or default to today
     selected_date = params[:date] ? Date.parse(params[:date]) : Date.current
     
     if name.present? && calories > 0
+      # Create user's food entry
       food = current_user.foods.create(
         name: name,
         calories: calories,
@@ -54,6 +57,61 @@ class FoodsController < ApplicationController
         sodium: sodium,
         created_at: selected_date.beginning_of_day + Time.current.hour.hours + Time.current.min.minutes
       )
+      
+      # Also save to CommonFood database if not already present
+      # User entered total values for the quantity specified, so we need to calculate per base unit
+      quantity = quantity > 0 ? quantity : 1
+      
+      # Determine base quantity (standardized units)
+      base_quantity = if unit == 'g'
+        100  # Standardize to per 100g
+      elsif unit == 'ml'
+        100  # Standardize to per 100ml
+      else
+        1    # Per serving
+      end
+      
+      # Calculate multiplier: user entered values are for 'quantity' units
+      # We need to scale to base_quantity
+      multiplier = if unit == 'g' || unit == 'ml'
+        quantity / base_quantity.to_f  # If user entered 200g, and base is 100g, multiplier = 2
+      else
+        quantity  # If user entered 2 servings, and base is 1 serving, multiplier = 2
+      end
+      
+      # Calculate values per base_quantity (what user entered / multiplier)
+      calories_per_base = multiplier > 0 ? (calories / multiplier) : calories
+      protein_per_base = multiplier > 0 ? (protein / multiplier) : protein
+      fat_per_base = multiplier > 0 ? (fat / multiplier) : fat
+      carbs_per_base = multiplier > 0 ? (carbs / multiplier) : carbs
+      fiber_per_base = multiplier > 0 ? (fiber / multiplier) : fiber
+      sugar_per_base = multiplier > 0 ? (sugar / multiplier) : sugar
+      sodium_per_base = multiplier > 0 ? (sodium / multiplier) : sodium
+      
+      # Determine serving size string
+      serving_size = if unit == 'ml'
+        "#{base_quantity}ml"
+      elsif unit == 'g'
+        "#{base_quantity}g"
+      else
+        "1 serving"
+      end
+      
+      # Save to CommonFood if it doesn't exist (or update if nutritional data is missing)
+      common_food = CommonFood.find_or_initialize_by(name: name)
+      if common_food.new_record? || common_food.protein.nil? || (common_food.protein == 0 && protein_per_base > 0)
+        common_food.calories_per_serving = calories_per_base
+        common_food.serving_size = serving_size
+        common_food.protein = protein_per_base
+        common_food.fat = fat_per_base
+        common_food.carbs = carbs_per_base
+        common_food.fiber = fiber_per_base
+        common_food.sugar = sugar_per_base
+        common_food.sodium = sodium_per_base
+        common_food.base_quantity = base_quantity
+        common_food.save
+      end
+      
       session[:message] = "Added #{name} (#{calories.round} calories)!"
       session[:message_type] = "success"
     else
@@ -159,9 +217,9 @@ class FoodsController < ApplicationController
       require 'json'
       require 'timeout'
       
-      # Search for the food with timeout
+      # Search for the food with timeout - increase pageSize for better meal matching
       api_key = ENV['USDA_API_KEY'] || 'DEMO_KEY'
-      search_url = URI("https://api.nal.usda.gov/fdc/v1/foods/search?api_key=#{api_key}&query=#{URI.encode_www_form_component(food_name)}&pageSize=1")
+      search_url = URI("https://api.nal.usda.gov/fdc/v1/foods/search?api_key=#{api_key}&query=#{URI.encode_www_form_component(food_name)}&pageSize=5&dataType=Branded,Foundation,SR Legacy")
       
       search_response = nil
       Timeout.timeout(5) do
@@ -193,7 +251,11 @@ class FoodsController < ApplicationController
         Rails.logger.info "USDA API found #{data['foods']&.length || 0} foods"
         
         if data['foods'] && data['foods'].any?
-          food = data['foods'].first
+          # Try to find the best match - prefer Foundation foods (more accurate) or exact name matches
+          food = data['foods'].find { |f| f['dataType'] == 'Foundation' } || 
+                 data['foods'].find { |f| f['description']&.downcase&.include?(food_name.downcase) } ||
+                 data['foods'].first
+          
           nutrients = {}
           
           # Extract nutrients from foodDataCentral format
@@ -217,20 +279,51 @@ class FoodsController < ApplicationController
             end
           end
           
-          # USDA API returns nutrients per 100g by default
-          # No need to scale if we're already getting per 100g data
+          # Check if there's a serving size in the food data
+          serving_size_value = food['servingSize'] || 100
+          serving_size_unit = food['servingSizeUnit'] || 'g'
+          
+          # For meals/dishes, try to use serving size if available, otherwise default to 100g
+          # If serving size is in grams and reasonable (50-500g), use it; otherwise use 100g
+          if serving_size_unit.downcase == 'g' && serving_size_value.to_f.between?(50, 500)
+            base_quantity = serving_size_value.to_f
+            serving_size_str = "#{serving_size_value.to_i}#{serving_size_unit}"
+          else
+            # Default to per 100g for consistency
+            base_quantity = 100
+            serving_size_str = '100g'
+          end
+          
+          food_name_clean = food['description'] || food_name
+          
+          # Save the fetched food to CommonFood database for future use
+          # Scale nutrients to match base_quantity if needed (API returns per 100g)
+          scale_factor = base_quantity / 100.0
+          calories_per_serving = (nutrients[:calories] || 0) * scale_factor
+          
+          common_food = CommonFood.find_or_initialize_by(name: food_name_clean)
+          common_food.calories_per_serving = calories_per_serving
+          common_food.serving_size = serving_size_str
+          common_food.protein = (nutrients[:protein] || 0) * scale_factor
+          common_food.fat = (nutrients[:fat] || 0) * scale_factor
+          common_food.carbs = (nutrients[:carbs] || 0) * scale_factor
+          common_food.fiber = (nutrients[:fiber] || 0) * scale_factor
+          common_food.sugar = (nutrients[:sugar] || 0) * scale_factor
+          common_food.sodium = (nutrients[:sodium] || 0) * scale_factor
+          common_food.base_quantity = base_quantity
+          common_food.save
           
           render json: {
-            name: food['description'] || food_name,
-            calories: nutrients[:calories] || 0,
-            protein: nutrients[:protein] || 0,
-            fat: nutrients[:fat] || 0,
-            carbs: nutrients[:carbs] || 0,
-            fiber: nutrients[:fiber] || 0,
-            sugar: nutrients[:sugar] || 0,
-            sodium: nutrients[:sodium] || 0,
-            base_quantity: 100,
-            serving_size: '100g'
+            name: food_name_clean,
+            calories: calories_per_serving,
+            protein: (nutrients[:protein] || 0) * scale_factor,
+            fat: (nutrients[:fat] || 0) * scale_factor,
+            carbs: (nutrients[:carbs] || 0) * scale_factor,
+            fiber: (nutrients[:fiber] || 0) * scale_factor,
+            sugar: (nutrients[:sugar] || 0) * scale_factor,
+            sodium: (nutrients[:sodium] || 0) * scale_factor,
+            base_quantity: base_quantity,
+            serving_size: serving_size_str
           }
         else
           Rails.logger.warn "No foods found in USDA API response for: #{food_name}"
